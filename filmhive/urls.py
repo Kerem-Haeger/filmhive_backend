@@ -26,4 +26,7 @@ urlpatterns = [
 
     # Film API
     path('api/', include('films.urls')),
+
+    # Reviews API
+    path('api/', include('reviews.urls')),
 ]
