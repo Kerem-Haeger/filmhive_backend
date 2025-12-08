@@ -4,6 +4,10 @@ import os
 import sys
 
 
+if os.path.exists("env.py"):
+    import env
+
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'filmhive.settings')
