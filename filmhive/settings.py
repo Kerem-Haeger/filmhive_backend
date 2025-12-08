@@ -53,6 +53,7 @@ INSTALLED_APPS = [
 
     # Local
     'films',
+    'reviews',
 ]
 
 MIDDLEWARE = [
