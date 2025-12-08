@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Review, ReviewLike
+from .models import Review, ReviewLike, ReviewReport
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -78,5 +78,37 @@ class ReviewLikeSerializer(serializers.ModelSerializer):
                 if ReviewLike.objects.filter(user=user, review=review).exists():
                     raise serializers.ValidationError(
                         "You have already liked this review."
+                    )
+        return attrs
+
+
+class ReviewReportSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source="user.id")
+    user_username = serializers.ReadOnlyField(source="user.username")
+
+    class Meta:
+        model = ReviewReport
+        fields = [
+            "id",
+            "review",
+            "user",
+            "user_username",
+            "created_at",
+        ]
+        read_only_fields = ["user", "user_username", "created_at"]
+
+    def validate(self, attrs):
+        """
+        Enforce: one report per user per review.
+        """
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        review = attrs.get("review")
+
+        if request and request.method == "POST":
+            if user and user.is_authenticated and review:
+                if ReviewReport.objects.filter(user=user, review=review).exists():
+                    raise serializers.ValidationError(
+                        "You have already reported this review."
                     )
         return attrs

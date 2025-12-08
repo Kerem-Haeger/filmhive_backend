@@ -1,6 +1,6 @@
 from rest_framework import viewsets, permissions, mixins
-from .models import Review, ReviewLike
-from .serializers import ReviewSerializer, ReviewLikeSerializer
+from .models import Review, ReviewLike, ReviewReport
+from .serializers import ReviewSerializer, ReviewLikeSerializer, ReviewReportSerializer
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -57,6 +57,32 @@ class ReviewLikeViewSet(
         if not user.is_authenticated:
             return ReviewLike.objects.none()
         return ReviewLike.objects.filter(user=user).select_related("review")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class ReviewReportViewSet(
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    POST /api/review-reports/ -> report a review
+
+    Frontend: on success, show "Thanks for reporting" and
+    hide the review in UI (and it will also disappear from
+    future /api/reviews/ calls for this user).
+    """
+
+    serializer_class = ReviewReportSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Not used (no GET), but safe default
+        user = self.request.user
+        if not user.is_authenticated:
+            return ReviewReport.objects.none()
+        return ReviewReport.objects.filter(user=user).select_related("review")
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
