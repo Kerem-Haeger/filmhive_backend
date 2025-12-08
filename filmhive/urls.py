@@ -29,4 +29,7 @@ urlpatterns = [
 
     # Reviews API
     path('api/', include('reviews.urls')),
+
+    # Favourites API
+    path('api/', include('favourites.urls')),
 ]
