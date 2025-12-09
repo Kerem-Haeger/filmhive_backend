@@ -43,4 +43,6 @@ class FilmSerializer(serializers.ModelSerializer):
             "people",
             "average_rating",
             "review_count",
+            "is_favourited",
+            "in_watchlist",
         ]
