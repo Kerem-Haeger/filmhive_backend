@@ -41,4 +41,6 @@ class FilmSerializer(serializers.ModelSerializer):
             "genres",
             "keywords",
             "people",
+            "average_rating",
+            "review_count",
         ]
