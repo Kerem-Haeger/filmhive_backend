@@ -32,4 +32,7 @@ urlpatterns = [
 
     # Favourites API
     path('api/', include('favourites.urls')),
+
+    # Watchlist API
+    path('api/', include('watchlist.urls')),
 ]
