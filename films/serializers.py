@@ -21,10 +21,10 @@ class PersonSerializer(serializers.ModelSerializer):
 
 
 class FilmSerializer(serializers.ModelSerializer):
-    # These use the ManyToMany relationships on Film (genres, keywords, people)
-    genres = GenreSerializer(many=True, read_only=True)
-    keywords = KeywordSerializer(many=True, read_only=True)
-    people = PersonSerializer(many=True, read_only=True)
+    average_rating = serializers.FloatField(read_only=True)
+    review_count = serializers.IntegerField(read_only=True)
+    is_favourited = serializers.BooleanField(read_only=True)
+    in_watchlist = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Film
