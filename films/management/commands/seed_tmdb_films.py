@@ -88,7 +88,12 @@ class Command(BaseCommand):
                 for g in tmdb_genres:
                     genre, _ = Genre.objects.get_or_create(
                         tmdb_id=g["id"],
-                        defaults={"name": g["name"]},
+                        defaults={
+                            "name": g["name"],
+                            # because Genre.id is NOT auto-generated,
+                            # we set it explicitly to the TMDB id
+                            "id": g["id"],
+                        },
                     )
                     genre_instances.append(genre)
 
