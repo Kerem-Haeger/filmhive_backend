@@ -36,6 +36,7 @@ class FilmSerializer(serializers.ModelSerializer):
             "id",
             "tmdb_id",
             "title",
+            "overview",
             "year",
             "poster_path",
             "runtime",

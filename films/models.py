@@ -47,6 +47,7 @@ class Film(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tmdb_id = models.IntegerField(unique=True, null=True, blank=True)
     title = models.CharField(max_length=255)
+    overview = models.TextField(null=True, blank=True)
     year = models.PositiveIntegerField()
     poster_path = models.CharField(max_length=500, blank=True)
     runtime = models.PositiveIntegerField(null=True, blank=True)

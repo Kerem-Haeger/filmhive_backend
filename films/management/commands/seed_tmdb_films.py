@@ -64,10 +64,12 @@ class Command(BaseCommand):
                 # Fetch full details (runtime, genres, etc.)
                 details = fetch_movie_details(tmdb_id)
                 runtime = details.get("runtime")
+                overview = details.get("overview")
 
                 film_defaults = {
                     "title": title,
                     "year": year,
+                    "overview": overview,
                     "poster_path": poster_path,
                     "runtime": runtime,
                     "critic_score": critic_score,
