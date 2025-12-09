@@ -29,11 +29,11 @@ class FilmViewSet(viewsets.ReadOnlyModelViewSet):
             /api/films/<id>/ (detail)
 
     Supports filters:
-      - ?search=term
-      - ?year=2023
-      - ?min_rating=7
-      - ?favourited=true
-      - ?in_watchlist=true
+    - ?search=term
+    - ?year=2023
+    - ?min_rating=7
+    - ?favourited=true
+    - ?in_watchlist=true
     """
 
     serializer_class = FilmSerializer
@@ -43,7 +43,8 @@ class FilmViewSet(viewsets.ReadOnlyModelViewSet):
         user = request.user
         params = request.query_params
 
-        qs = Film.objects.all()
+        # prefetch M2M so nested genres/keywords/people are efficient
+        qs = Film.objects.all().prefetch_related("genres", "keywords", "people")
 
         # basic filters
         search = params.get("search")
@@ -123,22 +124,30 @@ class BlendView(APIView):
             )
 
         try:
-            film_a = Film.objects.get(pk=film_a_id)
-            film_b = Film.objects.get(pk=film_b_id)
+            # prefetch related M2M so get_ids is efficient
+            film_a = (
+                Film.objects
+                .prefetch_related("genres", "keywords", "people")
+                .get(pk=film_a_id)
+            )
+            film_b = (
+                Film.objects
+                .prefetch_related("genres", "keywords", "people")
+                .get(pk=film_b_id)
+            )
         except Film.DoesNotExist:
             return Response(
                 {"detail": "One or both films were not found."},
                 status=404,
             )
 
-        # helper to pull related ids; adjust attribute names if needed
+        # helper to pull related ids; assumes Film.genres / Film.keywords / Film.people M2M
         def get_ids(film, attr_name):
             related = getattr(film, attr_name, None)
             if related is None:
                 return set()
             return set(related.values_list("id", flat=True))
 
-        # these assume Film.genres / Film.keywords / Film.people ManyToMany
         genres_a = get_ids(film_a, "genres")
         genres_b = get_ids(film_b, "genres")
 
@@ -176,7 +185,7 @@ class BlendView(APIView):
         W_KEYWORD = 1.5
         W_PERSON = 1.0
 
-        for film in candidates:
+        for film in candidates.prefetch_related("genres", "keywords", "people"):
             cg = set(get_ids(film, "genres"))
             ck = set(get_ids(film, "keywords"))
             cp = set(get_ids(film, "people"))
@@ -209,7 +218,9 @@ class BlendView(APIView):
 
         # reuse annotations from FilmViewSet for these films
         user = request.user
-        qs = Film.objects.filter(id__in=ranked_ids)
+        qs = Film.objects.filter(id__in=ranked_ids).prefetch_related(
+            "genres", "keywords", "people"
+        )
 
         qs = qs.annotate(
             average_rating=Avg("reviews__rating"),
