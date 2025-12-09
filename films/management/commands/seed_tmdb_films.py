@@ -1,8 +1,14 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from films.tmdb import fetch_popular_movies, fetch_movie_details
-from films.models import Film, Genre
+from films.tmdb import (
+    fetch_popular_movies,
+    fetch_movie_details,
+    fetch_movie_keywords,
+    fetch_movie_credits,
+)
+
+from films.models import Film, Genre, Keyword, Person, FilmPerson
 
 
 class Command(BaseCommand):
@@ -82,23 +88,76 @@ class Command(BaseCommand):
 
                 self.stdout.write(f"{action} film: {film.title} ({tmdb_id})")
 
-                # Handle genres
+                # ---------- Genres ----------
                 tmdb_genres = details.get("genres", [])
                 genre_instances = []
                 for g in tmdb_genres:
                     genre, _ = Genre.objects.get_or_create(
                         tmdb_id=g["id"],
                         defaults={
+                            "id": g["id"],     # your ERD uses int PK, not auto
                             "name": g["name"],
-                            # because Genre.id is NOT auto-generated,
-                            # we set it explicitly to the TMDB id
-                            "id": g["id"],
                         },
                     )
                     genre_instances.append(genre)
 
                 if hasattr(film, "genres"):
                     film.genres.set(genre_instances)
+
+                # ---------- Keywords ----------
+                keywords_payload = fetch_movie_keywords(tmdb_id)
+                tmdb_keywords = keywords_payload.get("keywords", [])
+                keyword_instances = []
+
+                for kw in tmdb_keywords[:10]:  # keep it small
+                    keyword, _ = Keyword.objects.get_or_create(
+                        tmdb_id=kw["id"],
+                        defaults={
+                            "id": kw["id"],   # int PK from ERD
+                            "name": kw["name"],
+                        },
+                    )
+                    keyword_instances.append(keyword)
+
+                if hasattr(film, "keywords"):
+                    film.keywords.set(keyword_instances)
+
+                # ---------- People (directors + top 5 cast) ----------
+                credits = fetch_movie_credits(tmdb_id)
+                people_for_film = []
+
+                # Directors from crew
+                for crew_member in credits.get("crew", []):
+                    if crew_member.get("job") == "Director":
+                        person, _ = Person.objects.get_or_create(
+                            tmdb_id=crew_member["id"],
+                            defaults={
+                                "id": crew_member["id"],   # int PK
+                                "name": crew_member["name"],
+                            },
+                        )
+                        people_for_film.append((person, "director", 0))
+
+                # Top 5 cast
+                for cast_member in credits.get("cast", [])[:5]:
+                    person, _ = Person.objects.get_or_create(
+                        tmdb_id=cast_member["id"],
+                        defaults={
+                            "id": cast_member["id"],
+                            "name": cast_member["name"],
+                        },
+                    )
+                    order = cast_member.get("order") or 0
+                    people_for_film.append((person, "cast", order))
+
+                # Create/update FilmPerson join rows
+                for person, role, billing_order in people_for_film:
+                    FilmPerson.objects.update_or_create(
+                        film=film,
+                        person=person,
+                        role=role,
+                        defaults={"billing_order": billing_order},
+                    )
 
         self.stdout.write(
             self.style.SUCCESS(

@@ -19,3 +19,11 @@ def fetch_popular_movies(page=1):
 
 def fetch_movie_details(tmdb_id):
     return tmdb_get(f"/movie/{tmdb_id}")
+
+
+def fetch_movie_keywords(tmdb_id):
+    return tmdb_get(f"/movie/{tmdb_id}/keywords")
+
+
+def fetch_movie_credits(tmdb_id):
+    return tmdb_get(f"/movie/{tmdb_id}/credits")
