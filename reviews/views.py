@@ -83,20 +83,19 @@ class ReviewLikeViewSet(
 
 class ReviewReportViewSet(
     mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     """
-    POST /api/review-reports/ -> report a review (body: { "review": "<uuid>" })
-
-    Frontend: on success, show "Thanks for reporting" and hide the review in UI.
-    It will also disappear from future /api/reviews/ calls for this user.
+    POST   /api/review-reports/        -> report a review (body: { "review": "<uuid>" })
+    DELETE /api/review-reports/<id>/   -> undo report (only own report)
     """
 
     serializer_class = ReviewReportSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Not used (no GET), but safe default
+        # Users may only delete their own reports
         user = self.request.user
         if not user.is_authenticated:
             return ReviewReport.objects.none()
@@ -104,3 +103,4 @@ class ReviewReportViewSet(
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
