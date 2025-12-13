@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework import viewsets, permissions, mixins
 from .models import Review, ReviewLike, ReviewReport
 from .serializers import ReviewSerializer, ReviewLikeSerializer, ReviewReportSerializer
@@ -16,11 +17,21 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """
+    /api/reviews/
+    - GET: public
+    - POST: authenticated
+    - PATCH/PUT/DELETE: owner only
+    """
+
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        qs = Review.objects.select_related("user", "film").all()
+        qs = (
+            Review.objects.select_related("user", "film")
+            .annotate(likes_count=Count("likes", distinct=True))
+        )
 
         film_id = self.request.query_params.get("film")
         user_id = self.request.query_params.get("user")
@@ -29,6 +40,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
             qs = qs.filter(film_id=film_id)
         if user_id:
             qs = qs.filter(user_id=user_id)
+
+        # If logged in, hide reviews this user reported
+        user = self.request.user
+        if user.is_authenticated:
+            reported_ids = ReviewReport.objects.filter(user=user).values_list(
+                "review_id", flat=True
+            )
+            qs = qs.exclude(id__in=reported_ids)
 
         return qs.order_by("-created_at")
 
@@ -42,8 +61,8 @@ class ReviewLikeViewSet(
     viewsets.GenericViewSet,
 ):
     """
-    POST /api/review-likes/  -> like a review
-    DELETE /api/review-likes/<id>/ -> unlike (only own like)
+    POST   /api/review-likes/        -> like a review (body: { "review": "<uuid>" })
+    DELETE /api/review-likes/<id>/   -> unlike (only own like)
     """
 
     serializer_class = ReviewLikeSerializer
@@ -67,11 +86,10 @@ class ReviewReportViewSet(
     viewsets.GenericViewSet,
 ):
     """
-    POST /api/review-reports/ -> report a review
+    POST /api/review-reports/ -> report a review (body: { "review": "<uuid>" })
 
-    Frontend: on success, show "Thanks for reporting" and
-    hide the review in UI (and it will also disappear from
-    future /api/reviews/ calls for this user).
+    Frontend: on success, show "Thanks for reporting" and hide the review in UI.
+    It will also disappear from future /api/reviews/ calls for this user.
     """
 
     serializer_class = ReviewReportSerializer
