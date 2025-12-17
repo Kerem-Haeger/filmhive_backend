@@ -51,3 +51,15 @@ class FilmSerializer(serializers.ModelSerializer):
             "is_favourited",
             "in_watchlist",
         ]
+
+
+class ForYouFilmSerializer(FilmSerializer):
+    """Extends FilmSerializer with recommendation-specific fields."""
+    match_score = serializers.IntegerField(read_only=True)
+    reasons = serializers.ListField(
+        child=serializers.CharField(),
+        read_only=True,
+    )
+
+    class Meta(FilmSerializer.Meta):
+        fields = FilmSerializer.Meta.fields + ["match_score", "reasons"]
