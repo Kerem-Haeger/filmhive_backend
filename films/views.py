@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -16,7 +16,14 @@ from django.db.models import (
 from django.contrib.auth import get_user_model
 
 from .models import Film
-from .serializers import FilmSerializer, ForYouFilmSerializer
+from .serializers import (
+    FilmSerializer,
+    ForYouFilmSerializer,
+    CompromiseRequestSerializer,
+    FilmCardLiteSerializer,
+    CompromiseResultSerializer,
+)
+from .services.compromise import get_compromise_films
 from favourites.models import Favourite
 from watchlist.models import Watchlist
 from reviews.models import Review
@@ -527,3 +534,86 @@ class ForYouView(APIView):
         )
         
         return Response(serializer.data)
+
+
+class CompromiseView(APIView):
+    """
+    POST /api/compromise/
+
+    Blend Mode: Find films that bridge two selected films.
+    
+    Input:
+        - film_a_id (UUID): First reference film
+        - film_b_id (UUID): Second reference film
+        - alpha (float, 0-1, default 0.5): Weight for film_a's similarity
+        - limit (int, default 20, max 50): Max results to return
+    
+    Returns:
+        - meta: Request echo + pagination info
+        - results: List of {film, score, match, reasons}
+    
+    Auth required: IsAuthenticated
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """Handle POST request for compromise/blend."""
+        # Validate input
+        serializer = CompromiseRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Extract validated data
+        film_a_id = serializer.validated_data["film_a_id"]
+        film_b_id = serializer.validated_data["film_b_id"]
+        alpha = serializer.validated_data["alpha"]
+        limit = serializer.validated_data["limit"]
+
+        # Fetch films from database
+        try:
+            film_a = Film.objects.get(id=film_a_id)
+            film_b = Film.objects.get(id=film_b_id)
+        except Film.DoesNotExist:
+            return Response(
+                {"detail": "One or both films not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Get compromise results using service
+        scored_results = get_compromise_films(
+            film_a=film_a,
+            film_b=film_b,
+            alpha=alpha,
+            limit=limit,
+        )
+
+        # Build response
+        meta = {
+            "film_a_id": str(film_a_id),
+            "film_b_id": str(film_b_id),
+            "alpha": alpha,
+            "limit": limit,
+            "returned": len(scored_results),
+        }
+
+        # Serialize results
+        results_data = []
+        for result in scored_results:
+            film_data = FilmCardLiteSerializer(result["film"]).data
+            results_data.append({
+                "film": film_data,
+                "score": result["score"],
+                "match": result["match"],
+                "reasons": result["reasons"],
+            })
+
+        response_data = {
+            "meta": meta,
+            "results": results_data,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
