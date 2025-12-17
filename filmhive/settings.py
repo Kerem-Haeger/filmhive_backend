@@ -27,12 +27,12 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 TMDB_API_KEY = os.environ.get("TMDB_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'filmhive-api.herokuapp.com',
+    'filmhive-api-7c5c6cd06ecf.herokuapp.com'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
