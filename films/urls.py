@@ -7,7 +7,7 @@ router = DefaultRouter()
 router.register(r"films", FilmViewSet, basename="film")
 
 urlpatterns = [
-    path("blend/", BlendView.as_view(), name="film-blend"),
-    path("for-you/", ForYouView.as_view(), name="film-for-you"),
+    path("films/blend/", BlendView.as_view(), name="film-blend"),
+    path("films/for-you/", ForYouView.as_view(), name="film-for-you"),
     path("", include(router.urls)),
 ]
