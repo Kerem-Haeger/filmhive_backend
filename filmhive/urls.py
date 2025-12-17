@@ -35,4 +35,7 @@ urlpatterns = [
 
     # Watchlist API
     path('api/', include('watchlist.urls')),
+
+    # Profiles API
+    path("api/profiles/", include("profiles.urls")),
 ]
