@@ -267,7 +267,7 @@ class ForYouView(APIView):
     Returns personalized film recommendations based on user's preferences,
     favourites, reviews, and watchlist. Auth required.
     
-    Response includes standard film fields + match_score (0-100) + reasons (max 2).
+    Response includes standard film fields + match_score (0-100) + reasons.
     """
 
     permission_classes = [IsAuthenticated]
@@ -298,6 +298,22 @@ class ForYouView(APIView):
             # Remove None values if any
             preferred_genre_ids.discard(None)
         
+        # Build genre affinity map (average rating per genre)
+        genre_affinity = {}
+        user_reviews = Review.objects.filter(user=user).select_related('film').prefetch_related('film__genres')
+        for review in user_reviews:
+            for genre in review.film.genres.all():
+                if genre.id not in genre_affinity:
+                    genre_affinity[genre.id] = {'total': 0, 'count': 0, 'name': genre.name}
+                genre_affinity[genre.id]['total'] += review.rating
+                genre_affinity[genre.id]['count'] += 1
+        
+        # Calculate average affinity per genre
+        for genre_id in genre_affinity:
+            total = genre_affinity[genre_id]['total']
+            count = genre_affinity[genre.id]['count']
+            genre_affinity[genre_id]['avg'] = total / count if count > 0 else 5.0
+        
         # Get user's interaction sets
         favourited_film_ids = set(
             Favourite.objects.filter(user=user).values_list('film_id', flat=True)
@@ -320,6 +336,30 @@ class ForYouView(APIView):
         )
         user_liked_genres.discard(None)
         
+        # Get user's preferred directors (from favourited/highly-rated films)
+        user_liked_directors = set(
+            Film.objects.filter(
+                Q(id__in=favourited_film_ids) | Q(id__in=highly_rated_film_ids)
+            ).values_list('people__id', flat=True)
+        )
+        user_liked_directors.discard(None)
+        
+        # Get user's preferred keywords/themes
+        user_liked_keywords = set(
+            Film.objects.filter(
+                Q(id__in=favourited_film_ids) | Q(id__in=highly_rated_film_ids)
+            ).values_list('keywords__id', flat=True)
+        )
+        user_liked_keywords.discard(None)
+        
+        # Calculate user's preferred year range (from favourites/high ratings)
+        liked_years = list(
+            Film.objects.filter(
+                Q(id__in=favourited_film_ids) | Q(id__in=highly_rated_film_ids)
+            ).values_list('year', flat=True)
+        )
+        avg_year = sum(liked_years) / len(liked_years) if liked_years else None
+        
         # Base candidate set: all films
         candidates = Film.objects.all().prefetch_related('genres', 'keywords', 'people')
         
@@ -341,6 +381,10 @@ class ForYouView(APIView):
         for film in candidates:
             film_id = str(film.id)
             film_genre_ids = set(film.genres.values_list('id', flat=True))
+            film_director_ids = set(
+                film.people.filter(film_people__role='director').values_list('id', flat=True)
+            )
+            film_keyword_ids = set(film.keywords.values_list('id', flat=True))
             
             # Skip if already interacted, unless it might score highly
             already_interacted = (
@@ -352,13 +396,33 @@ class ForYouView(APIView):
             score = 0
             reasons = []
             
-            # 1. Preferred genres overlap (strongest signal)
+            # 1. Preferred genres overlap with progressive weighting + affinity
             if preferred_genre_ids and film_genre_ids:
-                genre_overlap = len(preferred_genre_ids & film_genre_ids)
-                if genre_overlap > 0:
-                    # Each matching genre adds 30 points, capped at 60
-                    genre_score = min(genre_overlap * 30, 60)
-                    score += genre_score
+                overlapping_genres = preferred_genre_ids & film_genre_ids
+                genre_overlap_count = len(overlapping_genres)
+                
+                if genre_overlap_count > 0:
+                    # Progressive weighting: 1=25, 2=40, 3+=60
+                    if genre_overlap_count == 1:
+                        base_genre_score = 25
+                    elif genre_overlap_count == 2:
+                        base_genre_score = 40
+                    else:
+                        base_genre_score = 60
+                    
+                    # Apply genre affinity multiplier if we have rating history
+                    if genre_affinity:
+                        # Calculate weighted affinity for overlapping genres
+                        affinity_sum = sum(
+                            genre_affinity.get(gid, {}).get('avg', 5.0) 
+                            for gid in overlapping_genres
+                        )
+                        avg_affinity = affinity_sum / genre_overlap_count
+                        # Scale affinity (5.0=neutral, 8+=boost, 4-=penalty)
+                        affinity_multiplier = (avg_affinity / 5.0) * 0.5 + 0.5  # range: 0.5-1.5
+                        base_genre_score = int(base_genre_score * affinity_multiplier)
+                    
+                    score += base_genre_score
                     
                     # Generate reason
                     matching_genres = film.genres.filter(id__in=preferred_genre_ids)
@@ -373,14 +437,50 @@ class ForYouView(APIView):
             if user_liked_genres and film_genre_ids:
                 similarity_overlap = len(user_liked_genres & film_genre_ids)
                 if similarity_overlap > 0:
-                    # Each matching genre adds 20 points, capped at 40
-                    similarity_score = min(similarity_overlap * 20, 40)
+                    # Progressive: 1=15, 2=25, 3+=35
+                    if similarity_overlap == 1:
+                        similarity_score = 15
+                    elif similarity_overlap == 2:
+                        similarity_score = 25
+                    else:
+                        similarity_score = 35
+                    
                     score += similarity_score
                     
                     if len(reasons) < 2:
                         reasons.append("Similar to your favourites")
             
-            # 3. Small boost if on watchlist (shows interest)
+            # 3. Director matching
+            if user_liked_directors and film_director_ids:
+                director_overlap = len(user_liked_directors & film_director_ids)
+                if director_overlap > 0:
+                    score += min(director_overlap * 20, 30)
+                    if len(reasons) < 2:
+                        director_names = [
+                            d.name for d in film.people.filter(
+                                id__in=user_liked_directors,
+                                film_people__role='director'
+                            )[:1]
+                        ]
+                        if director_names:
+                            reasons.append(f"Director: {director_names[0]}")
+            
+            # 4. Keyword/theme matching
+            if user_liked_keywords and film_keyword_ids:
+                keyword_overlap = len(user_liked_keywords & film_keyword_ids)
+                if keyword_overlap > 0:
+                    # Keywords are weaker signal than genres
+                    score += min(keyword_overlap * 5, 15)
+            
+            # 5. Year preference (within 10 years of user's preferred era)
+            if avg_year and film.year:
+                year_diff = abs(film.year - avg_year)
+                if year_diff <= 10:
+                    # Closer years get more points
+                    year_score = int(10 - year_diff)
+                    score += year_score
+            
+            # 6. Small boost if on watchlist (shows interest)
             if film_id in watchlist_film_ids:
                 score += 10
                 if len(reasons) < 2:
@@ -394,7 +494,7 @@ class ForYouView(APIView):
             if score == 0:
                 continue
             
-            # Normalize to 0-100 scale (current max theoretical score is ~110)
+            # Normalize to 0-100 scale (max theoretical: ~150 with all signals)
             match_score = min(int(score), 100)
             
             # Limit to max 2 reasons
