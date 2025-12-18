@@ -26,7 +26,6 @@ from .serializers import (
     ForYouFilmSerializer,
     CompromiseRequestSerializer,
     FilmCardLiteSerializer,
-    CompromiseResultSerializer,
 )
 from .services.compromise import get_compromise_films
 from favourites.models import Favourite
@@ -138,11 +137,15 @@ class BlendView(APIView):
 
         try:
             # prefetch related M2M so get_ids is efficient
-            film_a = Film.objects.prefetch_related("genres", "keywords", "people").get(
-                pk=film_a_id
+            film_a = (
+                Film.objects
+                .prefetch_related("genres", "keywords", "people")
+                .get(pk=film_a_id)
             )
-            film_b = Film.objects.prefetch_related("genres", "keywords", "people").get(
-                pk=film_b_id
+            film_b = (
+                Film.objects
+                .prefetch_related("genres", "keywords", "people")
+                .get(pk=film_b_id)
             )
         except Film.DoesNotExist:
             return Response(
@@ -150,7 +153,7 @@ class BlendView(APIView):
                 status=404,
             )
 
-        # helper to pull related ids; assumes Film.genres / Film.keywords / Film.people M2M
+        # helper to pull related ids;
         def get_ids(film, attr_name):
             related = getattr(film, attr_name, None)
             if related is None:
@@ -221,7 +224,8 @@ class BlendView(APIView):
         )[:5]
 
         fit_scores = {
-            fid: int(round(scores[fid] / max_score * 100)) for fid in ranked_ids
+            fid: int(round(scores[fid] / max_score * 100))
+            for fid in ranked_ids
         }
 
         # reuse annotations from FilmViewSet for these films
@@ -283,7 +287,7 @@ class ForYouView(APIView):
         user = request.user
 
         # Check cache first (15 minute TTL)
-        cache_key = f"for_you_recommendations_{user.id}"
+        cache_key = f'for_you_recommendations_{user.id}'
         cached_result = cache.get(cache_key)
         if cached_result:
             return Response(cached_result)
@@ -291,25 +295,21 @@ class ForYouView(APIView):
         # Get user's profile and preferred genres
         try:
             profile = user.profile
-            preferred_genre_ids = (
-                set(profile.preferred_genres) if profile.preferred_genres else set()
-            )
-        except:
+            preferred_genre_ids = set(profile.preferred_genres) if profile.preferred_genres else set()
+        except Exception:
             preferred_genre_ids = set()
 
         # If user hasn't set preferred genres, infer from their interactions
         if not preferred_genre_ids:
             # Get genres from favourited films
             fav_genre_ids = set(
-                Favourite.objects.filter(user=user).values_list(
-                    "film__genres__id", flat=True
-                )
+                Favourite.objects.filter(user=user)
+                .values_list('film__genres__id', flat=True)
             )
             # Get genres from highly-rated reviews (7+)
             reviewed_genre_ids = set(
-                Review.objects.filter(user=user, rating__gte=7).values_list(
-                    "film__genres__id", flat=True
-                )
+                Review.objects.filter(user=user, rating__gte=7)
+                .values_list('film__genres__id', flat=True)
             )
             preferred_genre_ids = fav_genre_ids | reviewed_genre_ids
             # Remove None values if any
@@ -317,93 +317,71 @@ class ForYouView(APIView):
 
         # Build genre affinity map (average rating per genre)
         genre_affinity = {}
-        user_reviews = (
-            Review.objects.filter(user=user)
-            .select_related("film")
-            .prefetch_related("film__genres")
-        )
+        user_reviews = Review.objects.filter(user=user).select_related('film').prefetch_related('film__genres')
         for review in user_reviews:
             for genre in review.film.genres.all():
                 if genre.id not in genre_affinity:
-                    genre_affinity[genre.id] = {
-                        "total": 0,
-                        "count": 0,
-                        "name": genre.name,
-                    }
-                genre_affinity[genre.id]["total"] += review.rating
-                genre_affinity[genre.id]["count"] += 1
+                    genre_affinity[genre.id] = {'total': 0, 'count': 0, 'name': genre.name}
+                genre_affinity[genre.id]['total'] += review.rating
+                genre_affinity[genre.id]['count'] += 1
 
         # Calculate average affinity per genre
         for genre_id in genre_affinity:
-            total = genre_affinity[genre_id]["total"]
-            count = genre_affinity[genre.id]["count"]
-            genre_affinity[genre_id]["avg"] = total / count if count > 0 else 5.0
+            total = genre_affinity[genre_id]['total']
+            count = genre_affinity[genre.id]['count']
+            genre_affinity[genre_id]['avg'] = total / count if count > 0 else 5.0
 
         # Build director affinity map (average rating per director)
         director_affinity = {}
-        user_reviews_for_affinity = Review.objects.filter(user=user).prefetch_related(
-            "film__people"
-        )
+        user_reviews_for_affinity = Review.objects.filter(user=user).prefetch_related('film__people')
         for review in user_reviews_for_affinity:
-            for person in review.film.people.filter(film_people__role="director"):
+            for person in review.film.people.filter(film_people__role='director'):
                 if person.id not in director_affinity:
-                    director_affinity[person.id] = {
-                        "total": 0,
-                        "count": 0,
-                        "name": person.name,
-                    }
-                director_affinity[person.id]["total"] += review.rating
-                director_affinity[person.id]["count"] += 1
+                    director_affinity[person.id] = {'total': 0, 'count': 0, 'name': person.name}
+                director_affinity[person.id]['total'] += review.rating
+                director_affinity[person.id]['count'] += 1
 
         # Calculate average affinity per director
         for director_id in director_affinity:
-            total = director_affinity[director_id]["total"]
-            count = director_affinity[director_id]["count"]
-            director_affinity[director_id]["avg"] = total / count if count > 0 else 5.0
+            total = director_affinity[director_id]['total']
+            count = director_affinity[director_id]['count']
+            director_affinity[director_id]['avg'] = total / count if count > 0 else 5.0
 
         # Build keyword affinity map (average rating per keyword)
         keyword_affinity = {}
-        user_reviews_keywords = Review.objects.filter(user=user).prefetch_related(
-            "film__keywords"
-        )
+        user_reviews_keywords = Review.objects.filter(user=user).prefetch_related('film__keywords')
         for review in user_reviews_keywords:
             for keyword in review.film.keywords.all():
                 if keyword.id not in keyword_affinity:
-                    keyword_affinity[keyword.id] = {
-                        "total": 0,
-                        "count": 0,
-                        "name": keyword.name,
-                    }
-                keyword_affinity[keyword.id]["total"] += review.rating
-                keyword_affinity[keyword.id]["count"] += 1
+                    keyword_affinity[keyword.id] = {'total': 0, 'count': 0, 'name': keyword.name}
+                keyword_affinity[keyword.id]['total'] += review.rating
+                keyword_affinity[keyword.id]['count'] += 1
 
         # Calculate average affinity per keyword
         for keyword_id in keyword_affinity:
-            total = keyword_affinity[keyword_id]["total"]
-            count = keyword_affinity[keyword_id]["count"]
-            keyword_affinity[keyword_id]["avg"] = total / count if count > 0 else 5.0
+            total = keyword_affinity[keyword_id]['total']
+            count = keyword_affinity[keyword_id]['count']
+            keyword_affinity[keyword_id]['avg'] = total / count if count > 0 else 5.0
 
         # Get user's interaction sets
         favourited_film_ids = set(
-            Favourite.objects.filter(user=user).values_list("film_id", flat=True)
+            Favourite.objects.filter(user=user).values_list('film_id', flat=True)
         )
         reviewed_film_ids = set(
-            Review.objects.filter(user=user).values_list("film_id", flat=True)
+            Review.objects.filter(user=user).values_list('film_id', flat=True)
         )
         highly_rated_film_ids = set(
-            Review.objects.filter(user=user, rating__gte=7).values_list(
-                "film_id", flat=True
-            )
+            Review.objects.filter(user=user, rating__gte=7).values_list('film_id', flat=True)
         )
         watchlist_film_ids = set(
-            Watchlist.objects.filter(user=user).values_list("film_id", flat=True)
+            Watchlist.objects.filter(user=user).values_list('film_id', flat=True)
         )
 
         # Get genres from user's favourite and highly-rated films for similarity matching
         user_liked_genres = set(
             Film.objects.filter(
                 Q(id__in=favourited_film_ids) | Q(id__in=highly_rated_film_ids)
-            ).values_list("genres__id", flat=True)
+            ).values_list('genres__id', flat=True)
         )
         user_liked_genres.discard(None)
 
@@ -411,7 +389,7 @@ class ForYouView(APIView):
         user_liked_directors = set(
             Film.objects.filter(
                 Q(id__in=favourited_film_ids) | Q(id__in=highly_rated_film_ids)
-            ).values_list("people__id", flat=True)
+            ).values_list('people__id', flat=True)
         )
         user_liked_directors.discard(None)
 
@@ -419,7 +397,7 @@ class ForYouView(APIView):
         user_liked_keywords = set(
             Film.objects.filter(
                 Q(id__in=favourited_film_ids) | Q(id__in=highly_rated_film_ids)
-            ).values_list("keywords__id", flat=True)
+            ).values_list('keywords__id', flat=True)
         )
         user_liked_keywords.discard(None)
 
@@ -427,7 +405,7 @@ class ForYouView(APIView):
         liked_years = list(
             Film.objects.filter(
                 Q(id__in=favourited_film_ids) | Q(id__in=highly_rated_film_ids)
-            ).values_list("year", flat=True)
+            ).values_list('year', flat=True)
         )
         avg_year = sum(liked_years) / len(liked_years) if liked_years else None
 
@@ -466,61 +444,47 @@ class ForYouView(APIView):
             candidates = candidates.exclude(id__in=favourited_film_ids)
 
         # Calculate genre overlap scores in database
-        genre_overlap_score = (
-            Count(
-                Case(
-                    When(genres__id__in=relevant_genre_ids, then=1),
-                    output_field=IntegerField(),
-                )
+        genre_overlap_score = Count(
+            Case(
+                When(genres__id__in=relevant_genre_ids, then=1),
+                output_field=IntegerField()
             )
-            if relevant_genre_ids
-            else Value(0)
-        )
+        ) if relevant_genre_ids else Value(0)
 
         # Calculate director overlap scores in database
-        director_overlap_score = (
-            Count(
-                Case(
-                    When(people__id__in=user_liked_directors, then=1),
-                    output_field=IntegerField(),
-                )
+        director_overlap_score = Count(
+            Case(
+                When(people__id__in=user_liked_directors, then=1),
+                output_field=IntegerField()
             )
-            if user_liked_directors
-            else Value(0)
-        )
+        ) if user_liked_directors else Value(0)
 
         # Calculate keyword overlap scores in database
-        keyword_overlap_score = (
-            Count(
-                Case(
-                    When(keywords__id__in=user_liked_keywords, then=1),
-                    output_field=IntegerField(),
-                )
+        keyword_overlap_score = Count(
+            Case(
+                When(keywords__id__in=user_liked_keywords, then=1),
+                output_field=IntegerField()
             )
-            if user_liked_keywords
-            else Value(0)
-        )
+        ) if user_liked_keywords else Value(0)
 
         # Annotate candidates with scores
         candidates = candidates.annotate(
             genre_match_count=genre_overlap_score,
             director_match_count=director_overlap_score,
             keyword_match_count=keyword_overlap_score,
-            average_rating=Avg("reviews__rating"),
-            review_count=Count("reviews", distinct=True),
+            average_rating=Avg('reviews__rating'),
+            review_count=Count('reviews', distinct=True),
             is_favourited=Exists(
-                Favourite.objects.filter(user=user, film=OuterRef("pk"))
+                Favourite.objects.filter(user=user, film=OuterRef('pk'))
             ),
             in_watchlist=Exists(
-                Watchlist.objects.filter(user=user, film=OuterRef("pk"))
+                Watchlist.objects.filter(user=user, film=OuterRef('pk'))
             ),
         )
 
         # Filter to films with at least some signal (genre or director match)
         candidates = candidates.filter(
-            Q(genre_match_count__gt=0)
-            | Q(director_match_count__gt=0)
-            | Q(in_watchlist=True)
+            Q(genre_match_count__gt=0) | Q(director_match_count__gt=0) | Q(in_watchlist=True)
         )
 
         # Exclude already-reviewed films
@@ -540,7 +504,7 @@ class ForYouView(APIView):
             When(vote_count__gte=1000, then=Value(6)),
             When(vote_count__gte=500, then=Value(3)),
             default=Value(0),
-            output_field=IntegerField(),
+            output_field=IntegerField()
         )
 
         # Critic score bonus: Requires excellent ratings
@@ -550,49 +514,29 @@ class ForYouView(APIView):
             When(critic_score__gte=8.5, then=Value(6)),
             When(critic_score__gte=8.0, then=Value(3)),
             default=Value(0),
-            output_field=IntegerField(),
+            output_field=IntegerField()
         )
 
         # Year proximity bonus: Only very close matches
-        year_bonus = (
-            Case(
-                When(year__isnull=True, then=Value(0)),
-                default=Case(
-                    (
-                        When(
-                            year__gte=avg_year - 3,
-                            year__lte=avg_year + 3,
-                            then=Value(5),
-                        )
-                        if avg_year
-                        else Value(0)
-                    ),
-                    (
-                        When(
-                            year__gte=avg_year - 7,
-                            year__lte=avg_year + 7,
-                            then=Value(2),
-                        )
-                        if avg_year
-                        else Value(0)
-                    ),
-                    default=Value(0),
-                    output_field=IntegerField(),
-                ),
-                output_field=IntegerField(),
-            )
-            if avg_year
-            else Value(0)
-        )
+        year_bonus = Case(
+            When(year__isnull=True, then=Value(0)),
+            default=Case(
+                When(year__gte=avg_year - 3, year__lte=avg_year + 3, then=Value(5)) if avg_year else Value(0),
+                When(year__gte=avg_year - 7, year__lte=avg_year + 7, then=Value(2)) if avg_year else Value(0),
+                default=Value(0),
+                output_field=IntegerField()
+            ),
+            output_field=IntegerField()
+        ) if avg_year else Value(0)
 
         candidates = candidates.annotate(
             db_score=(
-                F("genre_match_count") * 2
-                + F("director_match_count") * 5
-                + F("keyword_match_count") * 2
-                + vote_count_bonus
-                + critic_score_bonus
-                + year_bonus
+                F('genre_match_count') * 2 +
+                F('director_match_count') * 5 +
+                F('keyword_match_count') * 2 +
+                vote_count_bonus +
+                critic_score_bonus +
+                year_bonus
             )
         )
 
@@ -604,61 +548,64 @@ class ForYouView(APIView):
                 keyword_match_count__gte=2,
                 vote_count__gte=2000,
                 critic_score__gte=8.5,
-                then=Value(
-                    100
-                ),  # Perfect match: 3+ genres + director + 2+ keywords + 2000+ votes + 8.5+ score
+                then=Value(100)  # Perfect match: 3+ genres + director + 2+ keywords + 2000+ votes + 8.5+ score
             ),
             When(
                 genre_match_count__gte=3,
                 director_match_count__gte=1,
                 keyword_match_count__gte=1,
-                then=Value(95),  # 3+ genres + director + keyword
+                then=Value(95)  # 3+ genres + director + keyword
             ),
             When(
                 genre_match_count__gte=2,
                 director_match_count__gte=1,
                 keyword_match_count__gte=1,
-                then=Value(85),  # 2+ genres + director + keyword
+                then=Value(85)  # 2+ genres + director + keyword
             ),
             When(
                 genre_match_count__gte=3,
                 director_match_count__gte=1,
-                then=Value(75),  # 3+ genres + director
+                then=Value(75)  # 3+ genres + director
             ),
             When(
                 genre_match_count__gte=2,
                 director_match_count__gte=1,
-                then=Value(70),  # 2+ genres + director
+                then=Value(70)  # 2+ genres + director
             ),
             When(
                 genre_match_count__gte=3,
                 keyword_match_count__gte=2,
-                then=Value(68),  # 3+ genres + 2+ keywords
+                then=Value(68)  # 3+ genres + 2+ keywords
             ),
             When(
                 genre_match_count__gte=3,
                 keyword_match_count__gte=1,
-                then=Value(65),  # 3+ genres + keyword
+                then=Value(65)  # 3+ genres + keyword
             ),
             When(
                 genre_match_count__gte=2,
                 keyword_match_count__gte=1,
-                then=Value(62),  # 2+ genres + keyword
+                then=Value(62)  # 2+ genres + keyword
             ),
-            When(genre_match_count__gte=2, then=Value(60)),  # 2+ genres only
-            default=Value(55),  # Single genre or director
+            When(
+                genre_match_count__gte=2,
+                then=Value(60)  # 2+ genres only
+            ),
+            default=Value(55)  # Single genre or director
         )
 
-        candidates = candidates.annotate(max_score_ceiling=max_score_ceiling)
+        candidates = candidates.annotate(
+            max_score_ceiling=max_score_ceiling
+        )
 
         # Order by composite score
-        candidates = candidates.order_by("-db_score", "-vote_count")
+        candidates = candidates.order_by('-db_score', '-vote_count')
 
         # Limit to top 100 candidates (still plenty for UX)
         candidates = candidates[:100]
 
         # Prefetch only what we need for serialization
-        candidates = candidates.prefetch_related("genres", "keywords")
+        candidates = candidates.prefetch_related('genres', 'keywords')
 
         # Simplified scoring: use the DB score and build minimal reasons
         scored_films = []
@@ -667,7 +614,7 @@ class ForYouView(APIView):
             film_id = str(film.id)
 
             # Use the DB-calculated score
-            score = getattr(film, "db_score", 0)
+            score = getattr(film, 'db_score', 0)
 
             # Apply genre affinity weighting
             # Recalculate the genre portion of the score based on user's history
@@ -682,7 +629,7 @@ class ForYouView(APIView):
 
                         # Look up user's affinity for this specific genre
                         if genre.id in genre_affinity:
-                            avg_rating = genre_affinity[genre.id]["avg"]
+                            avg_rating = genre_affinity[genre.id]['avg']
 
                             # Apply smoother multiplier based on user's rating history
                             if avg_rating >= 8.0:
@@ -704,22 +651,18 @@ class ForYouView(APIView):
                 score = score - original_genre_portion + weighted_genre_portion
 
             # Apply director affinity weighting
-            if (
-                film.director_match_count > 0
-                and user_liked_directors
-                and director_affinity
-            ):
+            if film.director_match_count > 0 and user_liked_directors and director_affinity:
                 original_director_portion = film.director_match_count * 5
                 weighted_director_portion = 0
 
                 # For each director in the film, apply affinity multiplier
-                for person in film.people.filter(film_people__role="director"):
+                for person in film.people.filter(film_people__role='director'):
                     if person.id in user_liked_directors:
                         base_score = 5
 
                         # Look up user's affinity for this director
                         if person.id in director_affinity:
-                            avg_rating = director_affinity[person.id]["avg"]
+                            avg_rating = director_affinity[person.id]['avg']
 
                             # Apply smoother multiplier
                             if avg_rating >= 8.0:
@@ -737,15 +680,10 @@ class ForYouView(APIView):
                         else:
                             weighted_director_portion += base_score
 
-                # Replace the director portion with weighted version
                 score = score - original_director_portion + weighted_director_portion
 
             # Apply keyword affinity weighting
-            if (
-                film.keyword_match_count > 0
-                and user_liked_keywords
-                and keyword_affinity
-            ):
+            if film.keyword_match_count > 0 and user_liked_keywords and keyword_affinity:
                 original_keyword_portion = film.keyword_match_count * 2
                 weighted_keyword_portion = 0
 
@@ -756,7 +694,7 @@ class ForYouView(APIView):
 
                         # Look up user's affinity for this keyword
                         if keyword.id in keyword_affinity:
-                            avg_rating = keyword_affinity[keyword.id]["avg"]
+                            avg_rating = keyword_affinity[keyword.id]['avg']
 
                             # Apply smoother multiplier
                             if avg_rating >= 8.0:
@@ -781,16 +719,12 @@ class ForYouView(APIView):
             reasons = []
             if film.genre_match_count > 0 and relevant_genre_ids:
                 # Get matching genre names
-                matching_genres = [
-                    g.name for g in film.genres.all() if g.id in relevant_genre_ids
-                ][:2]
+                matching_genres = [g.name for g in film.genres.all() if g.id in relevant_genre_ids][:2]
                 if matching_genres:
                     if len(matching_genres) == 1:
                         reasons.append(f"Matches your {matching_genres[0]} preference")
                     else:
-                        reasons.append(
-                            f"Matches your {', '.join(matching_genres)} preferences"
-                        )
+                        reasons.append(f"Matches your {', '.join(matching_genres)} preferences")
 
             if film.keyword_match_count > 0 and len(reasons) < 2:
                 reasons.append("Matches your themes")
@@ -803,30 +737,30 @@ class ForYouView(APIView):
 
             # Use raw score, but ceiling acts as a FLOOR (minimum guarantee)
             # If film matches criteria, it gets boosted to at least the ceiling value
-            score_ceiling = getattr(film, "max_score_ceiling", 55)
+            score_ceiling = getattr(film, 'max_score_ceiling', 55)
             match_score = max(score_ceiling, min(100, int(score)))
 
             # Store film with score and reasons
-            scored_films.append(
-                {
-                    "film": film,
-                    "match_score": match_score,
-                    "reasons": reasons[:2],
-                }
-            )
+            scored_films.append({
+                'film': film,
+                'match_score': match_score,
+                'reasons': reasons[:2],
+            })
 
         # Serialize films with match_score and reasons
         results = []
         for item in scored_films:
-            film = item["film"]
+            film = item['film']
             # Set temporary attributes for serializer
-            film.match_score = item["match_score"]
-            film.reasons = item["reasons"]
+            film.match_score = item['match_score']
+            film.reasons = item['reasons']
             results.append(film)
 
         # Use ForYouFilmSerializer
         serializer = ForYouFilmSerializer(
-            results, many=True, context={"request": request}
+            results,
+            many=True,
+            context={'request': request}
         )
 
         # Cache the result for 15 minutes
@@ -903,14 +837,12 @@ class CompromiseView(APIView):
         results_data = []
         for result in scored_results:
             film_data = FilmCardLiteSerializer(result["film"]).data
-            results_data.append(
-                {
-                    "film": film_data,
-                    "score": result["score"],
-                    "match": result["match"],
-                    "reasons": result["reasons"],
-                }
-            )
+            results_data.append({
+                "film": film_data,
+                "score": result["score"],
+                "match": result["match"],
+                "reasons": result["reasons"],
+            })
 
         response_data = {
             "meta": meta,

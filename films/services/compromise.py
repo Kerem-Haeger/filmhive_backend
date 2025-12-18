@@ -6,8 +6,7 @@ with a bonus for films overlapping with both input films.
 """
 
 from typing import Dict, List, Tuple, Set
-from django.db.models import QuerySet, Prefetch
-from films.models import Film, Genre, Keyword
+from films.models import Film
 
 
 # Scoring weights and bonuses
@@ -165,12 +164,6 @@ def get_compromise_films(
 
     genres_b = set(film_b.genres.values_list("id", flat=True))
     keywords_b = set(film_b.keywords.values_list("id", flat=True))
-
-    # Also keep name mappings for explanation strings
-    genre_id_to_name_a = {g.id: g.name for g in film_a.genres.all()}
-    genre_id_to_name_b = {g.id: g.name for g in film_b.genres.all()}
-    keyword_id_to_name_a = {k.id: k.name for k in film_a.keywords.all()}
-    keyword_id_to_name_b = {k.id: k.name for k in film_b.keywords.all()}
 
     # Build combined set of relevant IDs (union of both films)
     combined_genres = genres_a | genres_b
