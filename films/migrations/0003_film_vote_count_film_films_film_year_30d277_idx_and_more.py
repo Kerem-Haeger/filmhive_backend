@@ -6,49 +6,57 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('films', '0002_film_overview'),
+        ("films", "0002_film_overview"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='film',
-            name='vote_count',
+            model_name="film",
+            name="vote_count",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddIndex(
-            model_name='film',
-            index=models.Index(fields=['year'], name='films_film_year_30d277_idx'),
+            model_name="film",
+            index=models.Index(fields=["year"], name="films_film_year_30d277_idx"),
         ),
         migrations.AddIndex(
-            model_name='film',
-            index=models.Index(fields=['vote_count'], name='films_film_vote_co_2d61fb_idx'),
+            model_name="film",
+            index=models.Index(
+                fields=["vote_count"], name="films_film_vote_co_2d61fb_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='film',
-            index=models.Index(fields=['popularity'], name='films_film_popular_5504b8_idx'),
+            model_name="film",
+            index=models.Index(
+                fields=["popularity"], name="films_film_popular_5504b8_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='filmgenre',
-            index=models.Index(fields=['genre'], name='films_filmg_genre_i_895ec0_idx'),
+            model_name="filmgenre",
+            index=models.Index(fields=["genre"], name="films_filmg_genre_i_895ec0_idx"),
         ),
         migrations.AddIndex(
-            model_name='filmgenre',
-            index=models.Index(fields=['film'], name='films_filmg_film_id_2db476_idx'),
+            model_name="filmgenre",
+            index=models.Index(fields=["film"], name="films_filmg_film_id_2db476_idx"),
         ),
         migrations.AddIndex(
-            model_name='filmkeyword',
-            index=models.Index(fields=['keyword'], name='films_filmk_keyword_b508e1_idx'),
+            model_name="filmkeyword",
+            index=models.Index(
+                fields=["keyword"], name="films_filmk_keyword_b508e1_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='filmkeyword',
-            index=models.Index(fields=['film'], name='films_filmk_film_id_7179f9_idx'),
+            model_name="filmkeyword",
+            index=models.Index(fields=["film"], name="films_filmk_film_id_7179f9_idx"),
         ),
         migrations.AddIndex(
-            model_name='filmperson',
-            index=models.Index(fields=['person', 'role'], name='films_filmp_person__6a4427_idx'),
+            model_name="filmperson",
+            index=models.Index(
+                fields=["person", "role"], name="films_filmp_person__6a4427_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='filmperson',
-            index=models.Index(fields=['film'], name='films_filmp_film_id_33bfd8_idx'),
+            model_name="filmperson",
+            index=models.Index(fields=["film"], name="films_filmp_film_id_33bfd8_idx"),
         ),
     ]

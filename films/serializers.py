@@ -55,6 +55,7 @@ class FilmSerializer(serializers.ModelSerializer):
 
 class ForYouFilmSerializer(FilmSerializer):
     """Extends FilmSerializer with recommendation-specific fields."""
+
     match_score = serializers.IntegerField(read_only=True)
     reasons = serializers.ListField(
         child=serializers.CharField(),
@@ -67,13 +68,23 @@ class ForYouFilmSerializer(FilmSerializer):
 
 class FilmCardLiteSerializer(serializers.ModelSerializer):
     """Lightweight film card for /compromise/ and similar endpoints."""
+
     class Meta:
         model = Film
-        fields = ["id", "title", "year", "poster_path", "runtime", "critic_score", "popularity"]
+        fields = [
+            "id",
+            "title",
+            "year",
+            "poster_path",
+            "runtime",
+            "critic_score",
+            "popularity",
+        ]
 
 
 class CompromiseRequestSerializer(serializers.Serializer):
     """Validates input for the /compromise/ endpoint."""
+
     film_a_id = serializers.UUIDField(required=True)
     film_b_id = serializers.UUIDField(required=True)
     alpha = serializers.FloatField(required=False, default=0.5)
@@ -108,6 +119,7 @@ class CompromiseRequestSerializer(serializers.Serializer):
 
 class CompromiseResultSerializer(serializers.Serializer):
     """Serializes a single result from the /compromise/ endpoint."""
+
     film = FilmCardLiteSerializer()
     score = serializers.FloatField()
     match = serializers.DictField(child=serializers.FloatField())
@@ -116,5 +128,6 @@ class CompromiseResultSerializer(serializers.Serializer):
 
 class CompromiseResponseSerializer(serializers.Serializer):
     """Serializes the full response from the /compromise/ endpoint."""
+
     meta = serializers.DictField()
     results = CompromiseResultSerializer(many=True)

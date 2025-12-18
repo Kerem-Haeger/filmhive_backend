@@ -11,22 +11,46 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('films', '0001_initial'),
+        ("films", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Favourite',
+            name="Favourite",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('film', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='favourited_by', to='films.film')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='favourites', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "film",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="favourited_by",
+                        to="films.film",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="favourites",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.AddConstraint(
-            model_name='favourite',
-            constraint=models.UniqueConstraint(fields=('user', 'film'), name='unique_favourite_per_user_and_film'),
+            model_name="favourite",
+            constraint=models.UniqueConstraint(
+                fields=("user", "film"), name="unique_favourite_per_user_and_film"
+            ),
         ),
     ]

@@ -41,12 +41,16 @@ class Command(BaseCommand):
 
         existing_count = Film.objects.exclude(tmdb_id__isnull=True).count()
         if existing_count >= target:
-            self.stdout.write(self.style.SUCCESS(
-                f"DB already has {existing_count} films (target {target}). Nothing to do."
-            ))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"DB already has {existing_count} films (target {target}). Nothing to do."
+                )
+            )
             return
 
-        self.stdout.write(f"DB has {existing_count} films. Target is {target}. Seeding...")
+        self.stdout.write(
+            f"DB has {existing_count} films. Target is {target}. Seeding..."
+        )
 
         created_count = 0
         updated_count = 0
@@ -55,21 +59,79 @@ class Command(BaseCommand):
         # A balanced set of "buckets" to avoid only-recent / only-popular bias
         buckets = [
             # Time periods
-            {"label": "70s-80s popular", "params": {"primary_release_date.gte": "1970-01-01", "primary_release_date.lte": "1989-12-31", "sort_by": "popularity.desc"}},
-            {"label": "90s most voted",  "params": {"primary_release_date.gte": "1990-01-01", "primary_release_date.lte": "1999-12-31", "sort_by": "vote_count.desc"}},
-            {"label": "00s popular",     "params": {"primary_release_date.gte": "2000-01-01", "primary_release_date.lte": "2009-12-31", "sort_by": "popularity.desc"}},
-            {"label": "10s top rated",   "params": {"primary_release_date.gte": "2010-01-01", "primary_release_date.lte": "2019-12-31", "sort_by": "vote_average.desc"}},
-            {"label": "20s popular",     "params": {"primary_release_date.gte": "2020-01-01", "primary_release_date.lte": "2029-12-31", "sort_by": "popularity.desc"}},
-
+            {
+                "label": "70s-80s popular",
+                "params": {
+                    "primary_release_date.gte": "1970-01-01",
+                    "primary_release_date.lte": "1989-12-31",
+                    "sort_by": "popularity.desc",
+                },
+            },
+            {
+                "label": "90s most voted",
+                "params": {
+                    "primary_release_date.gte": "1990-01-01",
+                    "primary_release_date.lte": "1999-12-31",
+                    "sort_by": "vote_count.desc",
+                },
+            },
+            {
+                "label": "00s popular",
+                "params": {
+                    "primary_release_date.gte": "2000-01-01",
+                    "primary_release_date.lte": "2009-12-31",
+                    "sort_by": "popularity.desc",
+                },
+            },
+            {
+                "label": "10s top rated",
+                "params": {
+                    "primary_release_date.gte": "2010-01-01",
+                    "primary_release_date.lte": "2019-12-31",
+                    "sort_by": "vote_average.desc",
+                },
+            },
+            {
+                "label": "20s popular",
+                "params": {
+                    "primary_release_date.gte": "2020-01-01",
+                    "primary_release_date.lte": "2029-12-31",
+                    "sort_by": "popularity.desc",
+                },
+            },
             # Genre variety (TMDB genre IDs)
-            {"label": "Comedy",      "params": {"with_genres": "35", "sort_by": "vote_count.desc"}},
-            {"label": "Drama",       "params": {"with_genres": "18", "sort_by": "vote_count.desc"}},
-            {"label": "Horror",      "params": {"with_genres": "27", "sort_by": "popularity.desc"}},
-            {"label": "Romance",     "params": {"with_genres": "10749", "sort_by": "popularity.desc"}},
-            {"label": "Animation",   "params": {"with_genres": "16", "sort_by": "vote_count.desc"}},
-            {"label": "Documentary", "params": {"with_genres": "99", "sort_by": "vote_count.desc"}},
-            {"label": "Sci-Fi",      "params": {"with_genres": "878", "sort_by": "popularity.desc"}},
-            {"label": "Thriller",    "params": {"with_genres": "53", "sort_by": "popularity.desc"}},
+            {
+                "label": "Comedy",
+                "params": {"with_genres": "35", "sort_by": "vote_count.desc"},
+            },
+            {
+                "label": "Drama",
+                "params": {"with_genres": "18", "sort_by": "vote_count.desc"},
+            },
+            {
+                "label": "Horror",
+                "params": {"with_genres": "27", "sort_by": "popularity.desc"},
+            },
+            {
+                "label": "Romance",
+                "params": {"with_genres": "10749", "sort_by": "popularity.desc"},
+            },
+            {
+                "label": "Animation",
+                "params": {"with_genres": "16", "sort_by": "vote_count.desc"},
+            },
+            {
+                "label": "Documentary",
+                "params": {"with_genres": "99", "sort_by": "vote_count.desc"},
+            },
+            {
+                "label": "Sci-Fi",
+                "params": {"with_genres": "878", "sort_by": "popularity.desc"},
+            },
+            {
+                "label": "Thriller",
+                "params": {"with_genres": "53", "sort_by": "popularity.desc"},
+            },
         ]
 
         # Apply a quality filter everywhere
@@ -204,7 +266,9 @@ class Command(BaseCommand):
                 if current_total >= target:
                     break
 
-                self.stdout.write(f"Fetching discover page {page} ({bucket['label']})...")
+                self.stdout.write(
+                    f"Fetching discover page {page} ({bucket['label']})..."
+                )
                 data = fetch_discover_movies(page=page, **bucket["params"])
                 results = data.get("results", [])
 

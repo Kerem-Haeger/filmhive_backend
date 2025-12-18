@@ -77,34 +77,36 @@ class Film(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     # Add vote_count for filtering high-quality films
     vote_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["-year", "title"]
         indexes = [
-            models.Index(fields=['year']),
-            models.Index(fields=['vote_count']),
-            models.Index(fields=['popularity']),
+            models.Index(fields=["year"]),
+            models.Index(fields=["vote_count"]),
+            models.Index(fields=["popularity"]),
         ]
 
     def __str__(self):
         return f"{self.title} ({self.year})"
-    
+
 
 class FilmGenre(models.Model):
     # ERD: id uuid [pk], film_id, genre_id, created_at, unique (film_id, genre_id)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="film_genres")
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE, related_name="film_genres")
+    genre = models.ForeignKey(
+        Genre, on_delete=models.CASCADE, related_name="film_genres"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("film", "genre")
         indexes = [
-            models.Index(fields=['genre']),
-            models.Index(fields=['film']),
+            models.Index(fields=["genre"]),
+            models.Index(fields=["film"]),
         ]
 
     def __str__(self):
@@ -114,15 +116,19 @@ class FilmGenre(models.Model):
 class FilmKeyword(models.Model):
     # ERD: id uuid [pk], film_id, keyword_id, created_at, unique (film_id, keyword_id)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="film_keywords")
-    keyword = models.ForeignKey(Keyword, on_delete=models.CASCADE, related_name="film_keywords")
+    film = models.ForeignKey(
+        Film, on_delete=models.CASCADE, related_name="film_keywords"
+    )
+    keyword = models.ForeignKey(
+        Keyword, on_delete=models.CASCADE, related_name="film_keywords"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("film", "keyword")
         indexes = [
-            models.Index(fields=['keyword']),
-            models.Index(fields=['film']),
+            models.Index(fields=["keyword"]),
+            models.Index(fields=["film"]),
         ]
 
     def __str__(self):
@@ -139,7 +145,9 @@ class FilmPerson(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="film_people")
-    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="film_people")
+    person = models.ForeignKey(
+        Person, on_delete=models.CASCADE, related_name="film_people"
+    )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     billing_order = models.PositiveIntegerField(null=True, blank=True)
 
@@ -147,8 +155,8 @@ class FilmPerson(models.Model):
         unique_together = ("film", "person", "role")
         ordering = ["film", "role", "billing_order"]
         indexes = [
-            models.Index(fields=['person', 'role']),
-            models.Index(fields=['film']),
+            models.Index(fields=["person", "role"]),
+            models.Index(fields=["film"]),
         ]
 
     def __str__(self):

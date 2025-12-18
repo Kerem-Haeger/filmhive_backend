@@ -11,30 +11,58 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('films', '0001_initial'),
+        ("films", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Watchlist',
+            name="Watchlist",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('name', models.CharField(default='Watchlist', max_length=100)),
-                ('is_private', models.BooleanField(default=False)),
-                ('position', models.PositiveIntegerField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('film', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='in_watchlists', to='films.film')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='watchlist_items', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("name", models.CharField(default="Watchlist", max_length=100)),
+                ("is_private", models.BooleanField(default=False)),
+                ("position", models.PositiveIntegerField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "film",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="in_watchlists",
+                        to="films.film",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="watchlist_items",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['user', 'name', 'position', '-created_at'],
-                'indexes': [models.Index(fields=['user', 'name'], name='watchlist_w_user_id_7872b3_idx')],
+                "ordering": ["user", "name", "position", "-created_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["user", "name"], name="watchlist_w_user_id_7872b3_idx"
+                    )
+                ],
             },
         ),
         migrations.AddConstraint(
-            model_name='watchlist',
-            constraint=models.UniqueConstraint(fields=('user', 'name', 'film'), name='unique_watchlist_item_per_list'),
+            model_name="watchlist",
+            constraint=models.UniqueConstraint(
+                fields=("user", "name", "film"), name="unique_watchlist_item_per_list"
+            ),
         ),
     ]

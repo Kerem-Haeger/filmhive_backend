@@ -28,9 +28,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        qs = (
-            Review.objects.select_related("user", "film")
-            .annotate(likes_count=Count("likes", distinct=True))
+        qs = Review.objects.select_related("user", "film").annotate(
+            likes_count=Count("likes", distinct=True)
         )
 
         film_id = self.request.query_params.get("film")

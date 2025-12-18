@@ -13,6 +13,7 @@ class Watchlist(models.Model):
     Later, we can expand this to have multiple lists per user, with
     names, privacy settings, and positions.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         User,
