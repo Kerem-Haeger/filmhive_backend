@@ -92,6 +92,7 @@ class Command(BaseCommand):
             poster_path = teaser.get("poster_path") or ""
             critic_score = teaser.get("vote_average") or 0.0
             popularity = teaser.get("popularity") or 0.0
+            vote_count = teaser.get("vote_count") or 0
 
             details = fetch_movie_details(tmdb_id)
             runtime = details.get("runtime")
@@ -118,6 +119,7 @@ class Command(BaseCommand):
                 "runtime": runtime,
                 "critic_score": critic_score,
                 "popularity": popularity,
+                "vote_count": vote_count,
                 "last_synced_at": timezone.now(),
             }
 
@@ -218,12 +220,14 @@ class Command(BaseCommand):
                     if not tmdb_id:
                         continue
 
-                    # Skip if already in DB to save API calls
-                    if Film.objects.filter(tmdb_id=tmdb_id).exists():
+                    # Check if already in DB
+                    already_exists = Film.objects.filter(tmdb_id=tmdb_id).exists()
+                    if already_exists:
                         skipped_existing += 1
-                        continue
-
-                    upsert_movie(tmdb_id, teaser)
+                        # Still update to refresh vote_count and other fields
+                        upsert_movie(tmdb_id, teaser)
+                    else:
+                        upsert_movie(tmdb_id, teaser)
 
         final_total = Film.objects.exclude(tmdb_id__isnull=True).count()
         self.stdout.write(

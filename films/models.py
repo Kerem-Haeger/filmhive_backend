@@ -77,9 +77,17 @@ class Film(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Add vote_count for filtering high-quality films
+    vote_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["-year", "title"]
+        indexes = [
+            models.Index(fields=['year']),
+            models.Index(fields=['vote_count']),
+            models.Index(fields=['popularity']),
+        ]
 
     def __str__(self):
         return f"{self.title} ({self.year})"
@@ -94,6 +102,10 @@ class FilmGenre(models.Model):
 
     class Meta:
         unique_together = ("film", "genre")
+        indexes = [
+            models.Index(fields=['genre']),
+            models.Index(fields=['film']),
+        ]
 
     def __str__(self):
         return f"{self.film} – {self.genre}"
@@ -108,6 +120,10 @@ class FilmKeyword(models.Model):
 
     class Meta:
         unique_together = ("film", "keyword")
+        indexes = [
+            models.Index(fields=['keyword']),
+            models.Index(fields=['film']),
+        ]
 
     def __str__(self):
         return f"{self.film} – {self.keyword}"
@@ -130,6 +146,10 @@ class FilmPerson(models.Model):
     class Meta:
         unique_together = ("film", "person", "role")
         ordering = ["film", "role", "billing_order"]
+        indexes = [
+            models.Index(fields=['person', 'role']),
+            models.Index(fields=['film']),
+        ]
 
     def __str__(self):
         return f"{self.person} ({self.role}) – {self.film}"
