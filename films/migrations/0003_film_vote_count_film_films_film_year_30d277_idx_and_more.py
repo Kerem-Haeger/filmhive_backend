@@ -17,7 +17,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="film",
-            index=models.Index(fields=["year"], name="films_film_year_30d277_idx"),
+            index=models.Index(
+                fields=["year"], name="films_film_year_30d277_idx"
+            ),
         ),
         migrations.AddIndex(
             model_name="film",
@@ -33,11 +35,15 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="filmgenre",
-            index=models.Index(fields=["genre"], name="films_filmg_genre_i_895ec0_idx"),
+            index=models.Index(
+                fields=["genre"], name="films_filmg_genre_i_895ec0_idx"
+            ),
         ),
         migrations.AddIndex(
             model_name="filmgenre",
-            index=models.Index(fields=["film"], name="films_filmg_film_id_2db476_idx"),
+            index=models.Index(
+                fields=["film"], name="films_filmg_film_id_2db476_idx"
+            ),
         ),
         migrations.AddIndex(
             model_name="filmkeyword",
@@ -47,16 +53,21 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="filmkeyword",
-            index=models.Index(fields=["film"], name="films_filmk_film_id_7179f9_idx"),
-        ),
-        migrations.AddIndex(
-            model_name="filmperson",
             index=models.Index(
-                fields=["person", "role"], name="films_filmp_person__6a4427_idx"
+                fields=["film"], name="films_filmk_film_id_7179f9_idx"
             ),
         ),
         migrations.AddIndex(
             model_name="filmperson",
-            index=models.Index(fields=["film"], name="films_filmp_film_id_33bfd8_idx"),
+            index=models.Index(
+                fields=["person", "role"],
+                name="films_filmp_person__6a4427_idx",
+            ),
+        ),
+        migrations.AddIndex(
+            model_name="filmperson",
+            index=models.Index(
+                fields=["film"], name="films_filmp_film_id_33bfd8_idx"
+            ),
         ),
     ]

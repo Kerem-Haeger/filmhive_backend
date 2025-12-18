@@ -114,7 +114,10 @@ class Command(BaseCommand):
             },
             {
                 "label": "Romance",
-                "params": {"with_genres": "10749", "sort_by": "popularity.desc"},
+                "params": {
+                    "with_genres": "10749",
+                    "sort_by": "popularity.desc",
+                },
             },
             {
                 "label": "Animation",
@@ -231,14 +234,20 @@ class Command(BaseCommand):
                 if crew_member.get("job") == "Director":
                     person, _ = Person.objects.get_or_create(
                         tmdb_id=crew_member["id"],
-                        defaults={"id": crew_member["id"], "name": crew_member["name"]},
+                        defaults={
+                            "id": crew_member["id"],
+                            "name": crew_member["name"],
+                        },
                     )
                     people_for_film.append((person, "director", 0))
 
             for cast_member in credits.get("cast", [])[:5]:
                 person, _ = Person.objects.get_or_create(
                     tmdb_id=cast_member["id"],
-                    defaults={"id": cast_member["id"], "name": cast_member["name"]},
+                    defaults={
+                        "id": cast_member["id"],
+                        "name": cast_member["name"],
+                    },
                 )
                 order = cast_member.get("order") or 0
                 people_for_film.append((person, "cast", order))
@@ -262,7 +271,9 @@ class Command(BaseCommand):
             self.stdout.write(f"\n=== Bucket: {bucket['label']} ===")
 
             for page in range(1, pages_per_bucket + 1):
-                current_total = Film.objects.exclude(tmdb_id__isnull=True).count()
+                current_total = Film.objects.exclude(
+                    tmdb_id__isnull=True
+                ).count()
                 if current_total >= target:
                     break
 
@@ -276,7 +287,9 @@ class Command(BaseCommand):
                     break
 
                 for teaser in results:
-                    current_total = Film.objects.exclude(tmdb_id__isnull=True).count()
+                    current_total = Film.objects.exclude(
+                        tmdb_id__isnull=True
+                    ).count()
                     if current_total >= target:
                         break
 
@@ -285,7 +298,9 @@ class Command(BaseCommand):
                         continue
 
                     # Check if already in DB
-                    already_exists = Film.objects.filter(tmdb_id=tmdb_id).exists()
+                    already_exists = Film.objects.filter(
+                        tmdb_id=tmdb_id
+                    ).exists()
                     if already_exists:
                         skipped_existing += 1
                         # Still update to refresh vote_count and other fields

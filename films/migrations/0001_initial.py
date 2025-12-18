@@ -24,14 +24,23 @@ class Migration(migrations.Migration):
                         serialize=False,
                     ),
                 ),
-                ("tmdb_id", models.IntegerField(blank=True, null=True, unique=True)),
+                (
+                    "tmdb_id",
+                    models.IntegerField(blank=True, null=True, unique=True),
+                ),
                 ("title", models.CharField(max_length=255)),
                 ("year", models.PositiveIntegerField()),
                 ("poster_path", models.CharField(blank=True, max_length=500)),
-                ("runtime", models.PositiveIntegerField(blank=True, null=True)),
+                (
+                    "runtime",
+                    models.PositiveIntegerField(blank=True, null=True),
+                ),
                 ("critic_score", models.FloatField(blank=True, null=True)),
                 ("popularity", models.FloatField(blank=True, null=True)),
-                ("last_synced_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "last_synced_at",
+                    models.DateTimeField(blank=True, null=True),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
             ],
@@ -91,7 +100,10 @@ class Migration(migrations.Migration):
                         max_length=20,
                     ),
                 ),
-                ("billing_order", models.PositiveIntegerField(blank=True, null=True)),
+                (
+                    "billing_order",
+                    models.PositiveIntegerField(blank=True, null=True),
+                ),
                 (
                     "film",
                     models.ForeignKey(

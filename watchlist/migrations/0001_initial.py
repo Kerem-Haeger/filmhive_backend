@@ -28,9 +28,15 @@ class Migration(migrations.Migration):
                         serialize=False,
                     ),
                 ),
-                ("name", models.CharField(default="Watchlist", max_length=100)),
+                (
+                    "name",
+                    models.CharField(default="Watchlist", max_length=100),
+                ),
                 ("is_private", models.BooleanField(default=False)),
-                ("position", models.PositiveIntegerField(blank=True, null=True)),
+                (
+                    "position",
+                    models.PositiveIntegerField(blank=True, null=True),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
@@ -54,7 +60,8 @@ class Migration(migrations.Migration):
                 "ordering": ["user", "name", "position", "-created_at"],
                 "indexes": [
                     models.Index(
-                        fields=["user", "name"], name="watchlist_w_user_id_7872b3_idx"
+                        fields=["user", "name"],
+                        name="watchlist_w_user_id_7872b3_idx",
                     )
                 ],
             },
@@ -62,7 +69,8 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="watchlist",
             constraint=models.UniqueConstraint(
-                fields=("user", "name", "film"), name="unique_watchlist_item_per_list"
+                fields=("user", "name", "film"),
+                name="unique_watchlist_item_per_list",
             ),
         ),
     ]

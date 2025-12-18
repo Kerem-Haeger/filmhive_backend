@@ -1,7 +1,11 @@
 from django.db.models import Count
 from rest_framework import viewsets, permissions, mixins
 from .models import Review, ReviewLike, ReviewReport
-from .serializers import ReviewSerializer, ReviewLikeSerializer, ReviewReportSerializer
+from .serializers import (
+    ReviewSerializer,
+    ReviewLikeSerializer,
+    ReviewReportSerializer,
+)
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -25,7 +29,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = ReviewSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly,
+    ]
 
     def get_queryset(self):
         qs = Review.objects.select_related("user", "film").annotate(

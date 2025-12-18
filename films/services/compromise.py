@@ -92,32 +92,44 @@ def _build_explanation_strings(
     # Genres shared with both
     both_genres = shared_genres_a & shared_genres_b
     if both_genres:
-        reasons.append(f"Shared genres with both: {', '.join(sorted(both_genres))}")
+        reasons.append(
+            f"Shared genres with both: {', '.join(sorted(both_genres))}"
+        )
 
     # Genres shared with only A
     only_a_genres = shared_genres_a - shared_genres_b
     if only_a_genres:
-        reasons.append(f"Shared genres with A: {', '.join(sorted(only_a_genres))}")
+        reasons.append(
+            f"Shared genres with A: {', '.join(sorted(only_a_genres))}"
+        )
 
     # Genres shared with only B
     only_b_genres = shared_genres_b - shared_genres_a
     if only_b_genres:
-        reasons.append(f"Shared genres with B: {', '.join(sorted(only_b_genres))}")
+        reasons.append(
+            f"Shared genres with B: {', '.join(sorted(only_b_genres))}"
+        )
 
     # Keywords shared with both
     both_keywords = shared_keywords_a & shared_keywords_b
     if both_keywords:
-        reasons.append(f"Shared keywords with both: {', '.join(sorted(both_keywords))}")
+        reasons.append(
+            f"Shared keywords with both: {', '.join(sorted(both_keywords))}"
+        )
 
     # Keywords shared with only A
     only_a_keywords = shared_keywords_a - shared_keywords_b
     if only_a_keywords:
-        reasons.append(f"Shared keywords with A: {', '.join(sorted(only_a_keywords))}")
+        reasons.append(
+            f"Shared keywords with A: {', '.join(sorted(only_a_keywords))}"
+        )
 
     # Keywords shared with only B
     only_b_keywords = shared_keywords_b - shared_keywords_a
     if only_b_keywords:
-        reasons.append(f"Shared keywords with B: {', '.join(sorted(only_b_keywords))}")
+        reasons.append(
+            f"Shared keywords with B: {', '.join(sorted(only_b_keywords))}"
+        )
 
     return reasons
 
@@ -149,10 +161,14 @@ def get_compromise_films(
 
     # Prefetch all genres and keywords once
     film_a = (
-        Film.objects.filter(id=film_a.id).prefetch_related("genres", "keywords").first()
+        Film.objects.filter(id=film_a.id)
+        .prefetch_related("genres", "keywords")
+        .first()
     )
     film_b = (
-        Film.objects.filter(id=film_b.id).prefetch_related("genres", "keywords").first()
+        Film.objects.filter(id=film_b.id)
+        .prefetch_related("genres", "keywords")
+        .first()
     )
 
     if not film_a or not film_b:
@@ -170,16 +186,17 @@ def get_compromise_films(
     combined_keywords = keywords_a | keywords_b
 
     # Fetch candidates: must share ≥1 genre OR keyword with either film
-    candidates = Film.objects.exclude(id__in=[film_a.id, film_b.id]).prefetch_related(
-        "genres", "keywords"
-    )
+    candidates = Film.objects.exclude(
+        id__in=[film_a.id, film_b.id]
+    ).prefetch_related("genres", "keywords")
 
     # Filter to films sharing at least one genre or keyword
     if combined_genres or combined_keywords:
         from django.db.models import Q
 
         candidates = candidates.filter(
-            Q(genres__id__in=combined_genres) | Q(keywords__id__in=combined_keywords)
+            Q(genres__id__in=combined_genres)
+            | Q(keywords__id__in=combined_keywords)
         ).distinct()
     else:
         candidates = Film.objects.none()
@@ -210,7 +227,9 @@ def get_compromise_films(
         bonus = 0.0
         if (candidate_genres & genres_a) and (candidate_genres & genres_b):
             bonus += BOTH_GENRES_BONUS
-        if (candidate_keywords & keywords_a) and (candidate_keywords & keywords_b):
+        if (candidate_keywords & keywords_a) and (
+            candidate_keywords & keywords_b
+        ):
             bonus += BOTH_KEYWORDS_BONUS
 
         final_score = min(pair_score + bonus, 1.0)  # Cap at 1.0
@@ -225,8 +244,12 @@ def get_compromise_films(
         }
 
         # Build explanation strings using prefetched data
-        shared_genres_a = {g.name for g in candidate.genres.all() if g.id in genres_a}
-        shared_genres_b = {g.name for g in candidate.genres.all() if g.id in genres_b}
+        shared_genres_a = {
+            g.name for g in candidate.genres.all() if g.id in genres_a
+        }
+        shared_genres_b = {
+            g.name for g in candidate.genres.all() if g.id in genres_b
+        }
         shared_keywords_a = {
             k.name for k in candidate.keywords.all() if k.id in keywords_a
         }

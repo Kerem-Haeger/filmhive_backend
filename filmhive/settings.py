@@ -29,7 +29,11 @@ TMDB_API_KEY = os.environ.get("TMDB_API_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "filmhive-api-7c5c6cd06ecf.herokuapp.com"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "filmhive-api-7c5c6cd06ecf.herokuapp.com",
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
@@ -166,7 +170,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = [
     origin
-    for origin in [os.environ.get("CLIENT_ORIGIN"), os.environ.get("CLIENT_ORIGIN_DEV")]
+    for origin in [
+        os.environ.get("CLIENT_ORIGIN"),
+        os.environ.get("CLIENT_ORIGIN_DEV"),
+    ]
     if origin
 ]
 

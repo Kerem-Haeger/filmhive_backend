@@ -96,7 +96,9 @@ class Film(models.Model):
 class FilmGenre(models.Model):
     # ERD: id uuid [pk], film_id, genre_id, created_at, unique (film_id, genre_id)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="film_genres")
+    film = models.ForeignKey(
+        Film, on_delete=models.CASCADE, related_name="film_genres"
+    )
     genre = models.ForeignKey(
         Genre, on_delete=models.CASCADE, related_name="film_genres"
     )
@@ -144,7 +146,9 @@ class FilmPerson(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="film_people")
+    film = models.ForeignKey(
+        Film, on_delete=models.CASCADE, related_name="film_people"
+    )
     person = models.ForeignKey(
         Person, on_delete=models.CASCADE, related_name="film_people"
     )

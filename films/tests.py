@@ -57,7 +57,9 @@ class CompromiseAPITests(APITestCase):
         self.action = Genre.objects.create(id=1, name="Action", tmdb_id=28)
         self.thriller = Genre.objects.create(id=2, name="Thriller", tmdb_id=53)
         self.drama = Genre.objects.create(id=3, name="Drama", tmdb_id=18)
-        self.scifi = Genre.objects.create(id=4, name="Science Fiction", tmdb_id=878)
+        self.scifi = Genre.objects.create(
+            id=4, name="Science Fiction", tmdb_id=878
+        )
 
         # Create keywords
         self.heist = Keyword.objects.create(id=1, name="heist", tmdb_id=1001)

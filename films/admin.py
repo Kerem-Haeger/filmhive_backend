@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Film, Genre, Keyword, Person, FilmGenre, FilmKeyword, FilmPerson
+from .models import (
+    Film,
+    Genre,
+    Keyword,
+    Person,
+    FilmGenre,
+    FilmKeyword,
+    FilmPerson,
+)
 
 
 @admin.register(Film)

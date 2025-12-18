@@ -66,7 +66,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         if not user or not user.is_authenticated:
             return None
 
-        like = ReviewLike.objects.filter(user=user, review=obj).only("id").first()
+        like = (
+            ReviewLike.objects.filter(user=user, review=obj).only("id").first()
+        )
         return str(like.id) if like else None
 
     def get_reported_by_me(self, obj):
@@ -80,7 +82,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate_rating(self, value):
         if value < 1 or value > 10:
-            raise serializers.ValidationError("Rating must be between 1 and 10.")
+            raise serializers.ValidationError(
+                "Rating must be between 1 and 10."
+            )
         return value
 
     def validate(self, attrs):
@@ -125,7 +129,9 @@ class ReviewLikeSerializer(serializers.ModelSerializer):
 
         if request and request.method == "POST":
             if user and user.is_authenticated and review:
-                if ReviewLike.objects.filter(user=user, review=review).exists():
+                if ReviewLike.objects.filter(
+                    user=user, review=review
+                ).exists():
                     raise serializers.ValidationError(
                         "You have already liked this review."
                     )
@@ -154,7 +160,9 @@ class ReviewReportSerializer(serializers.ModelSerializer):
 
         if request and request.method == "POST":
             if user and user.is_authenticated and review:
-                if ReviewReport.objects.filter(user=user, review=review).exists():
+                if ReviewReport.objects.filter(
+                    user=user, review=review
+                ).exists():
                     raise serializers.ValidationError(
                         "You have already reported this review."
                     )

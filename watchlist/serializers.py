@@ -32,7 +32,9 @@ class WatchlistSerializer(serializers.ModelSerializer):
 
         if request and request.method == "POST":
             if user and user.is_authenticated and film:
-                if Watchlist.objects.filter(user=user, film=film, name=name).exists():
+                if Watchlist.objects.filter(
+                    user=user, film=film, name=name
+                ).exists():
                     raise serializers.ValidationError(
                         "This film is already in this watchlist."
                     )

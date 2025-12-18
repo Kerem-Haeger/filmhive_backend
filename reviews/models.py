@@ -7,8 +7,12 @@ from films.models import Film
 
 class Review(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
-    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reviews"
+    )
+    film = models.ForeignKey(
+        Film, on_delete=models.CASCADE, related_name="reviews"
+    )
     rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
@@ -26,14 +30,19 @@ class Review(models.Model):
 
 class ReviewLike(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="likes")
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name="likes"
+    )
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="review_likes"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("review", "user")  # each user may like a review once
+        unique_together = (
+            "review",
+            "user",
+        )  # each user may like a review once
 
     def __str__(self):
         return f"{self.user.username} liked review {self.review.id}"
@@ -41,7 +50,9 @@ class ReviewLike(models.Model):
 
 class ReviewReport(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="reports")
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name="reports"
+    )
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="review_reports"
     )

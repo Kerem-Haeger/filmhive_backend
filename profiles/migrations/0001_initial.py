@@ -27,7 +27,10 @@ class Migration(migrations.Migration):
                         serialize=False,
                     ),
                 ),
-                ("preferred_genres", models.JSONField(blank=True, default=list)),
+                (
+                    "preferred_genres",
+                    models.JSONField(blank=True, default=list),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (

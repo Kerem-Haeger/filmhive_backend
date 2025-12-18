@@ -39,7 +39,9 @@ class ReviewAPITests(APITestCase):
             "rating": 8,
             "body": "Great movie!",
         }
-        response = self.client.post(self.review_list_url, payload, format="json")
+        response = self.client.post(
+            self.review_list_url, payload, format="json"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Review.objects.count(), 0)
@@ -52,7 +54,9 @@ class ReviewAPITests(APITestCase):
             "rating": 9,
             "body": "Loved it!",
         }
-        response = self.client.post(self.review_list_url, payload, format="json")
+        response = self.client.post(
+            self.review_list_url, payload, format="json"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Review.objects.count(), 1)
@@ -70,10 +74,16 @@ class ReviewAPITests(APITestCase):
             "rating": 7,
             "body": "First review",
         }
-        first_response = self.client.post(self.review_list_url, payload, format="json")
+        first_response = self.client.post(
+            self.review_list_url, payload, format="json"
+        )
         self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
 
         # try again for same film
-        second_response = self.client.post(self.review_list_url, payload, format="json")
-        self.assertEqual(second_response.status_code, status.HTTP_400_BAD_REQUEST)
+        second_response = self.client.post(
+            self.review_list_url, payload, format="json"
+        )
+        self.assertEqual(
+            second_response.status_code, status.HTTP_400_BAD_REQUEST
+        )
         self.assertEqual(Review.objects.count(), 1)

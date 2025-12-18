@@ -50,7 +50,8 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="favourite",
             constraint=models.UniqueConstraint(
-                fields=("user", "film"), name="unique_favourite_per_user_and_film"
+                fields=("user", "film"),
+                name="unique_favourite_per_user_and_film",
             ),
         ),
     ]
