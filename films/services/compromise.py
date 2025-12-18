@@ -228,11 +228,11 @@ def get_compromise_films(
             "bonus": bonus,
         }
         
-        # Build explanation strings
-        shared_genres_a = {genre_id_to_name_a[gid] for gid in (candidate_genres & genres_a)}
-        shared_genres_b = {genre_id_to_name_b[gid] for gid in (candidate_genres & genres_b)}
-        shared_keywords_a = {keyword_id_to_name_a[kid] for kid in (candidate_keywords & keywords_a)}
-        shared_keywords_b = {keyword_id_to_name_b[kid] for kid in (candidate_keywords & keywords_b)}
+        # Build explanation strings (safely handle missing keys)
+        shared_genres_a = {genre_id_to_name_a.get(gid, '') for gid in (candidate_genres & genres_a) if gid in genre_id_to_name_a}
+        shared_genres_b = {genre_id_to_name_b.get(gid, '') for gid in (candidate_genres & genres_b) if gid in genre_id_to_name_b}
+        shared_keywords_a = {keyword_id_to_name_a.get(kid, '') for kid in (candidate_keywords & keywords_a) if kid in keyword_id_to_name_a}
+        shared_keywords_b = {keyword_id_to_name_b.get(kid, '') for kid in (candidate_keywords & keywords_b) if kid in keyword_id_to_name_b}
         
         reasons = _build_explanation_strings(
             candidate,
