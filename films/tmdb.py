@@ -27,3 +27,12 @@ def fetch_movie_keywords(tmdb_id):
 
 def fetch_movie_credits(tmdb_id):
     return tmdb_get(f"/movie/{tmdb_id}/credits")
+
+
+def fetch_discover_movies(page=1, **params):
+    """
+    Fetch movies using TMDB's /discover/movie endpoint.
+    Accepts flexible filters like year ranges, genres, sort modes, etc.
+    """
+    params["page"] = page
+    return tmdb_get("/discover/movie", params)
