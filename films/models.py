@@ -94,7 +94,7 @@ class Film(models.Model):
 
 
 class FilmGenre(models.Model):
-    # ERD: id uuid [pk], film_id, genre_id, created_at, unique (film_id, genre_id)
+    # ERD: id uuid [pk], film_id, genre_id, created_at, unique
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     film = models.ForeignKey(
         Film, on_delete=models.CASCADE, related_name="film_genres"
@@ -116,7 +116,7 @@ class FilmGenre(models.Model):
 
 
 class FilmKeyword(models.Model):
-    # ERD: id uuid [pk], film_id, keyword_id, created_at, unique (film_id, keyword_id)
+    # ERD: id uuid [pk], film_id, keyword_id, created_at, unique
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     film = models.ForeignKey(
         Film, on_delete=models.CASCADE, related_name="film_keywords"
