@@ -40,6 +40,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "https://filmhive-85b95f07d5b8.herokuapp.com",
+    "https://filmhive-api-7c5c6cd06ecf.herokuapp.com",
 ]
 
 
@@ -175,6 +177,27 @@ CORS_ALLOWED_ORIGINS = [
     ] if origin
 ]
 
+# Allow all standard headers and methods for CORS
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
