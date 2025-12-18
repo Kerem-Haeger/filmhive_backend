@@ -192,12 +192,16 @@ def get_compromise_films(
     else:
         candidates = Film.objects.none()
     
+    # Fetch all candidates with prefetched relations (evaluate the queryset once)
+    candidates = list(candidates)
+    
     # Score each candidate
     scored_results = []
     
     for candidate in candidates:
-        candidate_genres = set(candidate.genres.values_list("id", flat=True))
-        candidate_keywords = set(candidate.keywords.values_list("id", flat=True))
+        # Use prefetched data (already loaded, no new queries)
+        candidate_genres = set(g.id for g in candidate.genres.all())
+        candidate_keywords = set(k.id for k in candidate.keywords.all())
         
         # Compute similarity to each film
         sim_a, breakdown_a = _compute_similarity_score(
@@ -228,11 +232,11 @@ def get_compromise_films(
             "bonus": bonus,
         }
         
-        # Build explanation strings (safely handle missing keys)
-        shared_genres_a = {genre_id_to_name_a.get(gid, '') for gid in (candidate_genres & genres_a) if gid in genre_id_to_name_a}
-        shared_genres_b = {genre_id_to_name_b.get(gid, '') for gid in (candidate_genres & genres_b) if gid in genre_id_to_name_b}
-        shared_keywords_a = {keyword_id_to_name_a.get(kid, '') for kid in (candidate_keywords & keywords_a) if kid in keyword_id_to_name_a}
-        shared_keywords_b = {keyword_id_to_name_b.get(kid, '') for kid in (candidate_keywords & keywords_b) if kid in keyword_id_to_name_b}
+        # Build explanation strings using prefetched data
+        shared_genres_a = {g.name for g in candidate.genres.all() if g.id in genres_a}
+        shared_genres_b = {g.name for g in candidate.genres.all() if g.id in genres_b}
+        shared_keywords_a = {k.name for k in candidate.keywords.all() if k.id in keywords_a}
+        shared_keywords_b = {k.name for k in candidate.keywords.all() if k.id in keywords_b}
         
         reasons = _build_explanation_strings(
             candidate,
