@@ -68,6 +68,9 @@ INSTALLED_APPS = [
     "profiles",
 ]
 
+# Sites framework
+SITE_ID = int(os.environ.get("SITE_ID", 1))
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
