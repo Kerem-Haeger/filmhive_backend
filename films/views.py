@@ -427,7 +427,8 @@ class ForYouView(APIView):
             )
         )
 
-        # Get genres from user's favourite and highly-rated films for similarity matching
+        # Get genres from user's favourite and highly-rated films for
+        # similarity matching
         user_liked_genres = set(
             Film.objects.filter(
                 Q(id__in=favourited_film_ids) | Q(id__in=highly_rated_film_ids)
@@ -465,7 +466,8 @@ class ForYouView(APIView):
         # Build filter: films that match user's interests
         filter_q = Q()
 
-        # 1. Must share at least one genre with user's preferences or liked films
+        # 1. Must share at least one genre with user's preferences
+        # or liked films
         relevant_genre_ids = preferred_genre_ids | user_liked_genres
         if relevant_genre_ids:
             filter_q |= Q(genres__id__in=relevant_genre_ids)
@@ -474,7 +476,8 @@ class ForYouView(APIView):
         if user_liked_directors:
             filter_q |= Q(people__id__in=user_liked_directors)
 
-        # 3. OR share keywords with liked films (weaker signal, but still relevant)
+        # 3. OR share keywords with liked films (weaker signal, but
+        # still relevant)
         if user_liked_keywords:
             filter_q |= Q(keywords__id__in=user_liked_keywords)
 
@@ -489,7 +492,8 @@ class ForYouView(APIView):
         # Apply the filter
         candidates = candidates.filter(filter_q).distinct()
 
-        # Exclude already-favourited films upfront (we won't recommend what they already love)
+        # Exclude already-favourited films upfront (we won't recommend
+        # what they already love)
         if favourited_film_ids:
             candidates = candidates.exclude(id__in=favourited_film_ids)
 
@@ -624,7 +628,8 @@ class ForYouView(APIView):
             )
         )
 
-        # Add a ceiling based on criteria: sweet spot 80-90%, 100% only for perfection
+        # Add a ceiling based on criteria: sweet spot 80-90%, 100%
+        # only for perfection
         max_score_ceiling = Case(
             When(
                 genre_match_count__gte=3,
@@ -634,7 +639,8 @@ class ForYouView(APIView):
                 critic_score__gte=8.5,
                 then=Value(
                     100
-                ),  # Perfect match: 3+ genres + director + 2+ keywords + 2000+ votes + 8.5+ score
+                ),  # Perfect match: 3+ genres + director + 2+ keywords + 2000+
+                    # votes + 8.5+ score
             ),
             When(
                 genre_match_count__gte=3,
@@ -692,13 +698,13 @@ class ForYouView(APIView):
         scored_films = []
 
         for film in candidates:
-            film_id = str(film.id)
 
             # Use the DB-calculated score
             score = getattr(film, "db_score", 0)
 
             # Apply genre affinity weighting
-            # Recalculate the genre portion of the score based on user's history
+            # Recalculate the genre portion of the score based on
+            # user's history
             if (
                 film.genre_match_count > 0
                 and relevant_genre_ids
@@ -707,7 +713,8 @@ class ForYouView(APIView):
                 original_genre_portion = film.genre_match_count * 3
                 weighted_genre_portion = 0
 
-                # For each genre in the film, apply affinity multiplier if we have history
+                # For each genre in the film, apply affinity
+                # multiplier if we have history
                 for genre in film.genres.all():
                     if genre.id in relevant_genre_ids:
                         base_score = 3
@@ -716,7 +723,8 @@ class ForYouView(APIView):
                         if genre.id in genre_affinity:
                             avg_rating = genre_affinity[genre.id]["avg"]
 
-                            # Apply smoother multiplier based on user's rating history
+                            # Apply smoother multiplier based on user's
+                            # rating history
                             if avg_rating >= 8.0:
                                 multiplier = 1.25  # User loves this genre
                             elif avg_rating >= 7.0:
@@ -832,7 +840,8 @@ class ForYouView(APIView):
                         )
                     else:
                         reasons.append(
-                            f"Matches your {', '.join(matching_genres)} preferences"
+                            f"Matches your {', '.join(matching_genres)} "
+                            "preferences"
                         )
 
             if film.keyword_match_count > 0 and len(reasons) < 2:
@@ -845,7 +854,8 @@ class ForYouView(APIView):
                 reasons.append("On your watchlist")
 
             # Use raw score, but ceiling acts as a FLOOR (minimum guarantee)
-            # If film matches criteria, it gets boosted to at least the ceiling value
+            # If film matches criteria, it gets boosted to at least
+            # the ceiling value
             score_ceiling = getattr(film, "max_score_ceiling", 55)
             match_score = max(score_ceiling, min(100, int(score)))
 

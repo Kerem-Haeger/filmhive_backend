@@ -21,7 +21,8 @@ class WatchlistSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """
-        Prevent adding the same film twice to the same list (name) for this user.
+        Prevent adding the same film twice to the same list
+        (name) for this user.
         """
         request = self.context.get("request")
         user = getattr(request, "user", None)

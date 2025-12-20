@@ -67,7 +67,7 @@ class ReviewLikeViewSet(
     viewsets.GenericViewSet,
 ):
     """
-    POST   /api/review-likes/        -> like a review (body: { "review": "<uuid>" })
+    POST   /api/review-likes/  -> like a review (body: { "review": "<uuid>" })
     DELETE /api/review-likes/<id>/   -> unlike (only own like)
     """
 
@@ -93,7 +93,7 @@ class ReviewReportViewSet(
     viewsets.GenericViewSet,
 ):
     """
-    POST   /api/review-reports/        -> report a review (body: { "review": "<uuid>" })
+    POST   /api/review-reports/-> report a review (body: { "review": "<uuid>"})
     DELETE /api/review-reports/<id>/   -> undo report (only own report)
     """
 

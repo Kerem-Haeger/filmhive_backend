@@ -141,12 +141,14 @@ def get_compromise_films(
     limit: int = 20,
 ) -> List[Dict]:
     """
-    Find films that "blend" two selected films using weighted Jaccard similarity.
+    Find films that "blend" two selected films using weighted Jaccard
+    similarity.
 
     Args:
         film_a: First reference film
         film_b: Second reference film
-        alpha: Weight for film_a's similarity (0-1). film_b gets (1-alpha). Default 0.5.
+        alpha: Weight for film_a's similarity (0-1). film_b gets (1-alpha).
+            Default 0.5.
         limit: Max number of results to return. Default 20.
 
     Returns:
@@ -201,7 +203,8 @@ def get_compromise_films(
     else:
         candidates = Film.objects.none()
 
-    # Fetch all candidates with prefetched relations (evaluate the queryset once)
+    # Fetch all candidates with prefetched relations
+    # (evaluate the queryset once)
     candidates = list(candidates)
 
     # Score each candidate

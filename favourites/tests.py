@@ -31,7 +31,8 @@ class FavouriteAPITests(APITestCase):
             popularity=3.0,
         )
 
-        # from router: router.register("favourites", FavouriteViewSet, basename="favourite")
+        # from router: router.register("favourites", FavouriteViewSet,
+        # basename="favourite")
         self.fav_list_url = reverse("favourite-list")
 
     def test_anonymous_cannot_add_favourite(self):
