@@ -118,7 +118,6 @@ The database schema is designed around a **thin local cache** of TMDB film data 
 **Films**
 - `films` stores minimal film data (UUID PK) and a unique `tmdb_id`
 - Includes metadata for filtering and ranking (year, runtime, popularity, critic_score)
-- Includes `last_synced_at` for cache refresh control
 
 **Taxonomy**
 - `genres` + `film_genres` (many-to-many)
@@ -130,7 +129,7 @@ The database schema is designed around a **thin local cache** of TMDB film data 
 ### User-generated content
 - `reviews` (one per user per film enforced by unique index)
 - `review_likes` (one per user per review enforced by unique index)
-- `review_reports` (one report per user per review enforced by unique index)
+- `review_reports` (one report per user per review enforced by unique index, reports create a record for admin review via Django admin.)
 
 ### User collections
 - `favourites` (one per user per film enforced by unique index)
@@ -170,7 +169,7 @@ The schema enforces data integrity through foreign keys, unique constraints, and
 |-----------|--------|
 | `reviews` | Stores user-written reviews for films (one per user per film) |
 | `review_likes` | Tracks which users have liked which reviews |
-| `review_reports` | Allows users to report inappropriate reviews |
+| `review_reports` | Reports create a record for admin review via Django admin. |
 
 #### User Collection Tables
 
@@ -197,8 +196,6 @@ The schema enforces data integrity through foreign keys, unique constraints, and
 ---
 
 ## Endpoints
-
-> Routes may vary slightly depending on implementation, but the API follows predictable REST patterns.
 
 ### Films (public read)
 - `GET /films/` — list films (supports search/filter/order)
@@ -241,39 +238,7 @@ This structure demonstrates framework-specific features (serializers, permission
 
 ## TMDB Data Strategy
 
-FilmHive uses TMDB as the source of film metadata through a **one-time seeding approach**.
-
-### How It Works
-
-The database is populated once with a curated set of approximately **1,500 popular films** from TMDB using a custom Django management command:
-
-```bash
-python manage.py seed_tmdb_films
-```
-
-This command:
-- Fetches film data from TMDB API (popular films, trending, top-rated)
-- Stores essential metadata in the local database (`films` table)
-- Populates related tables (`film_genres`, `film_keywords`, `film_people`)
-- Creates a static, self-contained dataset for the API
-
-### Benefits of This Approach
-
-- **Fast performance**: All film data is local, no external API calls during user requests
-- **Predictable costs**: No runtime TMDB API quota concerns
-- **Rich filtering**: Enables complex queries using genres, keywords, cast, and directors via local database joins
-- **Recommendation support**: Powers the Blend Mode algorithm and For You feed using relational data
-- **No staleness**: Films are classic/popular titles that don't require frequent updates
-
-### Data Scope
-
-The seeded dataset includes:
-- Film titles, years, runtimes, and TMDB IDs
-- Popularity scores and critic ratings
-- Poster paths and overview descriptions
-- Associated genres, keywords, cast, and directors
-
-This static approach keeps the database lightweight while providing a rich, curated film catalog for discovery and recommendations.
+“We seed ~1500 films once using a management command. No runtime TMDB calls in production.”
 
 ---
 
