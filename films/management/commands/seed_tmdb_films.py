@@ -12,8 +12,10 @@ from films.models import Film, Genre, Keyword, Person, FilmPerson
 
 
 class Command(BaseCommand):
-    help = "Seed the database with films from TMDB using a balanced mix " \
-            "(decades, genres, sorts)."
+    help = (
+        "Seed the database with films from TMDB using a balanced mix "
+        "(decades, genres, sorts)."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -33,9 +35,9 @@ class Command(BaseCommand):
             type=int,
             default=50,
             help=(
-                    "Filter out films with fewer votes than this "
-                    "(helps quality/mix)."
-                ),
+                "Filter out films with fewer votes than this "
+                "(helps quality/mix)."
+            ),
         )
 
     def handle(self, *args, **options):
@@ -47,8 +49,8 @@ class Command(BaseCommand):
         if existing_count >= target:
             self.stdout.write(
                 self.style.SUCCESS(
-                        f"DB already has {existing_count} films "
-                        f"(target {target}). Nothing to do."
+                    f"DB already has {existing_count} films "
+                    f"(target {target}). Nothing to do."
                 )
             )
             return
@@ -316,8 +318,8 @@ class Command(BaseCommand):
         final_total = Film.objects.exclude(tmdb_id__isnull=True).count()
         self.stdout.write(
             self.style.SUCCESS(
-                    f"Done. Created {created_count}, updated {updated_count}, "
-                    f"skipped existing {skipped_existing}. "
-                    f"DB total now: {final_total} (target {target})."
+                f"Done. Created {created_count}, updated {updated_count}, "
+                f"skipped existing {skipped_existing}. "
+                f"DB total now: {final_total} (target {target})."
             )
         )

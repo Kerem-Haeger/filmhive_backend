@@ -2,31 +2,7 @@
 
 FilmHive API is the Django REST Framework back-end for the FilmHive platform. It provides a secure, well-structured REST API for film discovery (via a lightweight TMDB cache), reviews, likes, favourites, watchlists, and user profile preferences.
 
-This repository is the **backend only** (separate from the React frontend).
-
----
-
-## Table of Contents
-
-- [Project Purpose](#project-purpose)
-- [Target Audience](#target-audience)
-- [Key Features](#key-features)
-- [API Base URL](#api-base-url)
-- [Authentication & API Access](#authentication--api-access)
-- [CORS Configuration](#cors-configuration)
-- [API Users and Permissions](#api-users-and-permissions)
-- [Data Model](#data-model)
-- [Endpoints](#endpoints)
-- [TMDB Data Strategy](#tmdb-data-strategy)
-- [Search, Filter, Ordering](#search-filter-ordering)
-- [Tech Stack](#tech-stack)
-- [Installation and Local Setup](#installation-and-local-setup)
-- [Environment Variables](#environment-variables)
-- [Deployment](#deployment)
-- [Testing](#testing)
-- [Security](#security)
-- [Future Improvements](#future-improvements)
-- [Credits](#credits)
+This repository is the **backend only** (separate from the React frontend README, which can be found [here](https://github.com/Kerem-Haeger/filmhive_frontend/blob/main/README.md)).
 
 ---
 

@@ -26,6 +26,7 @@ def remove_default_site(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ("profiles", "0001_initial"),
+        ("sites", "0002_alter_domain_unique"),
     ]
 
     operations = [

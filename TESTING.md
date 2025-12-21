@@ -4,16 +4,6 @@ This document outlines the testing approach and results for the FilmHive API bac
 
 ---
 
-## Table of Contents
-
-- [Testing Overview](#testing-overview)
-- [Running Tests](#running-tests)
-- [Test Coverage by App](#test-coverage-by-app)
-- [Code Quality & Validation](#code-quality--validation)
-- [Manual Testing](#manual-testing)
-
----
-
 ## Testing Overview
 
 The FilmHive API uses Django's built-in test framework with `APITestCase` from Django REST Framework for comprehensive endpoint testing.
@@ -150,11 +140,16 @@ python manage.py test --verbosity=2
 | Profiles | 8 | ✅ All Passing |
 | **Total** | **41** | **✅** |
 
+![Test Result](documentation/tests_backend.png)
+
 ---
 
 ## Code Quality & Validation
 
 ### Python Linting
+
+![Flake8](documentation/flake8_backend.png)
+![Black_Check](documentation/black_check_backend.png)
 
 The codebase follows PEP 8 standards and is validated using:
 

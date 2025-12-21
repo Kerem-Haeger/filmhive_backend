@@ -39,11 +39,11 @@ class FavouriteAPITests(APITestCase):
         payload = {"film": str(self.film.id)}
         response = self.client.post(self.fav_list_url, payload, format="json")
 
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Favourite.objects.count(), 0)
 
     def test_authenticated_user_can_add_favourite(self):
-        self.client.login(username="favuser", password="testpass123")
+        self.client.force_authenticate(user=self.user)
 
         payload = {"film": str(self.film.id)}
         response = self.client.post(self.fav_list_url, payload, format="json")
@@ -56,7 +56,7 @@ class FavouriteAPITests(APITestCase):
         self.assertEqual(fav.film, self.film)
 
     def test_user_cannot_add_same_film_twice(self):
-        self.client.login(username="favuser", password="testpass123")
+        self.client.force_authenticate(user=self.user)
 
         payload = {"film": str(self.film.id)}
 
@@ -89,7 +89,7 @@ class FavouriteAPITests(APITestCase):
         )
         Favourite.objects.create(user=other, film=other_film)
 
-        self.client.login(username="favuser", password="testpass123")
+        self.client.force_authenticate(user=self.user)
 
         response = self.client.get(self.fav_list_url)
 

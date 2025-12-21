@@ -37,12 +37,11 @@ class WatchlistAPITests(APITestCase):
     def test_anonymous_cannot_add_watchlist_item(self):
         payload = {"film": str(self.film.id)}
         response = self.client.post(self.watchlist_url, payload, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Watchlist.objects.count(), 0)
 
     def test_authenticated_user_can_add_watchlist_item(self):
-        self.client.login(username="watchuser", password="testpass123")
+        self.client.force_authenticate(user=self.user)
 
         # no name sent -> should use default "Watchlist"
         payload = {"film": str(self.film.id)}
@@ -57,7 +56,7 @@ class WatchlistAPITests(APITestCase):
         self.assertEqual(item.name, "Watchlist")
 
     def test_user_cannot_add_same_film_twice_to_same_list(self):
-        self.client.login(username="watchuser", password="testpass123")
+        self.client.force_authenticate(user=self.user)
 
         payload = {"film": str(self.film.id), "name": "Watchlist"}
 
@@ -98,7 +97,7 @@ class WatchlistAPITests(APITestCase):
             name="Watchlist",
         )
 
-        self.client.login(username="watchuser", password="testpass123")
+        self.client.force_authenticate(user=self.user)
 
         response = self.client.get(self.watchlist_url)
 

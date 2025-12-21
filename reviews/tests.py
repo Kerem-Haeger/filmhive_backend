@@ -42,12 +42,11 @@ class ReviewAPITests(APITestCase):
         response = self.client.post(
             self.review_list_url, payload, format="json"
         )
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Review.objects.count(), 0)
 
     def test_authenticated_user_can_create_review(self):
-        self.client.login(username="testuser", password="testpass123")
+        self.client.force_authenticate(user=self.user)
 
         payload = {
             "film": str(self.film.id),
@@ -67,7 +66,7 @@ class ReviewAPITests(APITestCase):
         self.assertEqual(review.rating, 9)
 
     def test_user_cannot_review_same_film_twice(self):
-        self.client.login(username="testuser", password="testpass123")
+        self.client.force_authenticate(user=self.user)
 
         payload = {
             "film": str(self.film.id),

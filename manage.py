@@ -5,7 +5,7 @@ import sys
 
 
 if os.path.exists("env.py"):
-    import env      # noqa: F401
+    import env  # noqa: F401
 
 
 def main():

@@ -640,7 +640,7 @@ class ForYouView(APIView):
                 then=Value(
                     100
                 ),  # Perfect match: 3+ genres + director + 2+ keywords + 2000+
-                    # votes + 8.5+ score
+                # votes + 8.5+ score
             ),
             When(
                 genre_match_count__gte=3,
