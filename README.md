@@ -261,11 +261,17 @@ This is especially important for the films list endpoint, where discoverability 
 
 ## Tech Stack
 
-- Python + Django
-- Django REST Framework
-- PostgreSQL
-- dj-rest-auth with DRF Token Authentication
-- CORS support for React frontend integration
+- **Python 3.10** – Backend programming language
+- **Django** – Web framework providing project structure and configuration
+- **Django REST Framework** – RESTful API implementation
+- **dj-rest-auth** – Authentication and registration endpoints
+- **django-allauth** – User account management
+- **PostgreSQL** – Relational database
+- **Django ORM** – Database abstraction and querying
+- **Gunicorn** – Production WSGI server
+- **Heroku** – Backend deployment platform
+- **CORS Headers (django-cors-headers)** – Cross-origin request handling for frontend integration
+
 
 ---
 
@@ -463,5 +469,36 @@ These directly support the project's security and access-control criteria.
 
 ## Credits
 
-TMDB API is used as the external film metadata provider (FilmHive stores only a minimal cache).
+### Technologies & Frameworks
+- **[Python](https://www.python.org/)** – Core programming language used for the backend
+- **[Django](https://www.djangoproject.com/)** – High-level web framework providing application structure and configuration
+- **[Django REST Framework](https://www.django-rest-framework.org/)** – Toolkit for building the RESTful API
+- **[dj-rest-auth](https://dj-rest-auth.readthedocs.io/)** – Authentication endpoints for login, logout, and registration
+- **[django-allauth](https://django-allauth.readthedocs.io/)** – User account management and authentication backend
+- **[PostgreSQL](https://www.postgresql.org/)** – Relational database used for persistent data storage
+- **[Gunicorn](https://gunicorn.org/)** – WSGI HTTP server for production deployment
+- **[Heroku](https://www.heroku.com/)** – Cloud platform used to deploy the backend API
 
+### Database & Data Management
+- **Django ORM** – Object–relational mapper for database interaction
+- **UUID primary keys** – Used for most domain models to improve security
+- **Composite unique constraints** – Enforce data integrity and prevent duplicate user interactions
+
+### External APIs & Data Sources
+- **[The Movie Database (TMDB) API](https://www.themoviedb.org/settings/api)** – Source of film metadata used to seed the local film dataset
+
+### Development & Tooling
+- **[pip](https://pip.pypa.io/)** – Python package manager
+- **[virtualenv](https://virtualenv.pypa.io/)** – Isolated Python development environment
+- **[GitHub](https://github.com/)** – Version control and repository hosting
+- **Django Admin** – Used for data inspection, moderation (e.g. review reports), and debugging
+
+### Learning Resources
+- **[Django Documentation](https://docs.djangoproject.com/)** – Official framework reference
+- **[Django REST Framework Documentation](https://www.django-rest-framework.org/)** – API design and best practices
+- **Code Institute Course Material** – Backend architecture, security, and assessment guidance
+- **[Stack Overflow](https://stackoverflow.com/)** – Community support and problem-solving
+
+### Acknowledgments
+- **Code Institute** – Educational framework and project requirements
+- **Juliia Konovalova** – Mentor support and guidance throughout development
