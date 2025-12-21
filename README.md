@@ -481,6 +481,10 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 
 The FilmHive API is deployed using Heroku as a web service with a PostgreSQL database.
 
+> **Note:**  
+> A small number of test user accounts and reviews have been intentionally left in the deployed database to demonstrate review creation, permissions, and aggregation behaviour.  
+> Reviews are primarily associated with a limited set of films (e.g. *The Avengers*) to make assessment and testing clearer.
+
 ### Deployment Platform
 
 - Heroku (web dyno)
