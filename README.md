@@ -2,7 +2,7 @@
 
 FilmHive API is the Django REST Framework back-end for the FilmHive platform. It provides a secure, well-structured REST API for film discovery (via a lightweight TMDB cache), reviews, likes, favourites, watchlists, and user profile preferences.
 
-This repository is the **backend only** (separate from the React frontend), as required for PP5.
+This repository is the **backend only** (separate from the React frontend).
 
 ---
 
@@ -17,7 +17,7 @@ This repository is the **backend only** (separate from the React frontend), as r
 - [API Users and Permissions](#api-users-and-permissions)
 - [Data Model](#data-model)
 - [Endpoints](#endpoints)
-- [TMDB Hybrid Cache Strategy](#tmdb-hybrid-cache-strategy)
+- [TMDB Data Strategy](#tmdb-data-strategy)
 - [Search, Filter, Ordering](#search-filter-ordering)
 - [Tech Stack](#tech-stack)
 - [Installation and Local Setup](#installation-and-local-setup)
@@ -64,8 +64,6 @@ The API is designed to be consumed by the FilmHive React frontend and follows RE
 - Add/remove favourites
 - Create and manage watchlist entries (supports **multiple named lists** per user)
 - Maintain a user profile (e.g. preferred genres)
-
-These features support the PP5 requirements for an API that stores/manipulates domain records, includes CRUD, authentication, and permissions.
 
 ---
 ## API Base URL
@@ -217,7 +215,8 @@ The schema enforces data integrity through foreign keys, unique constraints, and
 - Duplicate likes, favourites, and watchlist entries are prevented using composite unique indexes
 - Foreign key constraints ensure referential integrity between users, films, and related entities
 - UUID primary keys are used for most domain tables to improve security and scalability
-> The ERD contains additional optional social/notification tables in some versions; the backend focuses on the schema used by FilmHive's core features.
+
+![ERD](documentation/erd.png)
 
 ---
 
@@ -264,20 +263,41 @@ This structure demonstrates framework-specific features (serializers, permission
 
 ---
 
-## TMDB Hybrid Cache Strategy
+## TMDB Data Strategy
 
-FilmHive uses TMDB as a source of truth for film metadata, while storing a **thin local cache** so the API can:
+FilmHive uses TMDB as the source of film metadata through a **one-time seeding approach**.
 
-- power fast list/search/filter without repeated external calls
-- support recommendation logic using local joins (genres/keywords/people)
-- refresh stale film data via `last_synced_at`
+### How It Works
 
-Typical approach:
-1. On first request for a TMDB film, fetch essential fields from TMDB.
-2. Save/update in `films` and related join tables (`film_genres`, `film_keywords`, `film_people`).
-3. If `last_synced_at` is older than a threshold (e.g., 7 days), refresh in the background or on demand.
+The database is populated once with a curated set of approximately **1,500 popular films** from TMDB using a custom Django management command:
 
-This matches the FilmHive concept and keeps the database lightweight while still relationally rich.
+```bash
+python manage.py seed_tmdb_films
+```
+
+This command:
+- Fetches film data from TMDB API (popular films, trending, top-rated)
+- Stores essential metadata in the local database (`films` table)
+- Populates related tables (`film_genres`, `film_keywords`, `film_people`)
+- Creates a static, self-contained dataset for the API
+
+### Benefits of This Approach
+
+- **Fast performance**: All film data is local, no external API calls during user requests
+- **Predictable costs**: No runtime TMDB API quota concerns
+- **Rich filtering**: Enables complex queries using genres, keywords, cast, and directors via local database joins
+- **Recommendation support**: Powers the Blend Mode algorithm and For You feed using relational data
+- **No staleness**: Films are classic/popular titles that don't require frequent updates
+
+### Data Scope
+
+The seeded dataset includes:
+- Film titles, years, runtimes, and TMDB IDs
+- Popularity scores and critic ratings
+- Poster paths and overview descriptions
+- Associated genres, keywords, cast, and directors
+
+This static approach keeps the database lightweight while providing a rich, curated film catalog for discovery and recommendations.
 
 ---
 
@@ -515,7 +535,7 @@ For detailed information about testing, including test coverage, validation proc
 
 ## Security
 
-FilmHive API follows standard security practices expected for PP5:
+FilmHive API follows standard security practices:
 
 - Sensitive values stored in environment variables (not in repo)
 - DEBUG=False in production

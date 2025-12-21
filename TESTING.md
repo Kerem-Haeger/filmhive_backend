@@ -226,7 +226,6 @@ While the current test suite provides solid coverage of core functionality, the 
 - **Review Reports**: Add tests for reporting inappropriate reviews
 - **Edge Cases**: Additional tests for malformed requests, invalid UUIDs, etc.
 - **Performance**: Load testing for high-traffic scenarios
-- **TMDB Sync**: Tests for cache refresh logic and TMDB API integration
 
 ---
 
