@@ -412,7 +412,6 @@ heroku config:set CLIENT_ORIGIN="https://your-frontend-domain.com"
 heroku config:set SITE_ID="1"
 ```
 
-**Note:** `DATABASE_URL` is automatically set by Heroku when you attach a Postgres add-on.
 
 ### Generating a Django Secret Key
 

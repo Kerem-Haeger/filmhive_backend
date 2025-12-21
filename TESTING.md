@@ -6,7 +6,7 @@ This document outlines the testing approach and results for the FilmHive API bac
 
 ## Testing Overview
 
-The FilmHive API uses Django's built-in test framework with `APITestCase` from Django REST Framework for comprehensive endpoint testing.
+The FilmHive API uses Django's built-in test framework with `APITestCase` from Django REST Framework for automated endpoint testing of the core features.
 
 **Testing Strategy:**
 - Automated unit and integration tests for all major features
@@ -141,6 +141,9 @@ python manage.py test --verbosity=2
 | **Total** | **41** | **✅** |
 
 ![Test Result](documentation/tests_backend.png)
+
+- Tests run using Django test database
+- Each test case uses isolated setup
 
 ---
 
