@@ -420,55 +420,14 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 
 ## Deployment
 
-The FilmHive API is deployed using Heroku as a web service with a PostgreSQL database.
+The FilmHive API is deployed to Heroku.
+
+Full deployment steps, configuration details, and production notes are documented in
+[DEPLOYMENT.md](DEPLOYMENT.md).
 
 > **Note:**  
 > A small number of test user accounts and reviews have been intentionally left in the deployed database to demonstrate review creation, permissions, and aggregation behaviour.  
 > Reviews are primarily associated with a limited set of films (e.g. *The Avengers*) to make assessment and testing clearer.
-
-### Deployment Platform
-
-- Heroku (web dyno)
-- PostgreSQL
-
-### Deployment Steps (Summary)
-
-1. Create a new Heroku app.
-2. Attach a Heroku Postgres database.
-3. Set the required Config Vars (environment variables), including:
-   - `SECRET_KEY`
-   - `DEBUG=False`
-   - `DATABASE_URL`
-   - `ALLOWED_HOSTS`
-   - `CLIENT_ORIGIN`
-   - `CLIENT_ORIGIN_DEV`
-   - `TMDB_API_KEY`
-4. Connect the Heroku app to the GitHub repository and enable automatic deployments.
-5. Ensure the following files are present in the repository:
-   - `requirements.txt`
-   - `Procfile` (running gunicorn)
-6. Deploy the application.
-7. Run database migrations:
-   ```bash
-   python manage.py migrate
-   ```
-8. Create a superuser for admin access:
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-### Production Configuration
-
-- DEBUG is disabled in production.
-- All sensitive values are stored securely using Heroku Config Vars.
-- CORS is restricted to the deployed frontend domain(s).
-- Static and media handling follows Django best practices for production APIs.
-
-The deployed API is accessible at:
-
-```
-https://filmhive-api-7c5c6cd06ecf.herokuapp.com
-```
 
 ---
 
